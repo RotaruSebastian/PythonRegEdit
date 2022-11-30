@@ -29,9 +29,30 @@ value_types = {
 }
 
 
+def get_params(param):
+    base_key = main_keys[int(param[0])]
+    sub_key = str(param[2:])
+    sub_key = sub_key.removesuffix('/')
+    sub_key = sub_key.replace('/', '\\')
+    return base_key, sub_key
+
+
 @app.route('/create_key/<path:param>')
 def create_key(param):
-    print('create_key')
+    base_key, sub_key = get_params(param)
+    handle = winreg.OpenKey(base_key, sub_key)
+    current_keys = []
+    sub_key_count = winreg.QueryInfoKey(handle)[0]
+    for i in range(sub_key_count):
+        current_keys.append(winreg.EnumKey(handle, i))
+    new_key_base_name = 'New Key #'
+    i = 1
+    while new_key_base_name + str(i) in current_keys:
+        i += 1
+    new_key = winreg.CreateKey(handle, new_key_base_name + str(i))
+    new_key.Close()
+    handle.Close()
+    return json.dumps([])
 
 
 @app.route('/delete_key/<path:param>')
@@ -41,11 +62,8 @@ def delete_key(param):
 
 @app.route('/inspect_key/<path:param>')
 def inspect_key(param):
-    base_key = main_keys[int(param[0])]
-    sub_key = str(param[2:])
+    base_key, sub_key = get_params(param)
     result = []
-    sub_key = sub_key.removesuffix('/')
-    sub_key = sub_key.replace('/', '\\')
     found_default = False
     try:
         handle = winreg.OpenKey(base_key, sub_key)
@@ -68,11 +86,8 @@ def inspect_key(param):
 
 @app.route('/expand_key/<path:param>')
 def expand_key(param):
-    base_key = main_keys[int(param[0])]
-    sub_key = str(param[2:])
+    base_key, sub_key = get_params(param)
     result = []
-    sub_key = sub_key.removesuffix('/')
-    sub_key = sub_key.replace('/', '\\')
     try:
         handle = winreg.OpenKey(base_key, sub_key)
         length = winreg.QueryInfoKey(handle)[0]
