@@ -29,9 +29,27 @@ document.addEventListener('mouseup', function(e) {
     isHandlerDragging = false;
 });
 // Main panel
+$("tbody").on('click', 'tr', function(e) {
+    $(this)
+        .toggleClass('selected')
+        .siblings('.selected')
+        .removeClass('selected');
+    let value_buttons = document.querySelectorAll(".value_dependent");
+    for(let button in value_buttons) {
+        value_buttons[button].disabled = false;
+    }
+});
 function select_key(id) {
     let h = document.getElementById("key_name");
+    let key_buttons = document.querySelectorAll(".key_dependent");
     h.textContent = main_keys[id[0]] + id.slice(1);
+    for(let button in key_buttons) {
+        key_buttons[button].disabled = false;
+    }
+    let value_buttons = document.querySelectorAll(".value_dependent");
+    for(let button in value_buttons) {
+        value_buttons[button].disabled = true;
+    }
     $.getJSON('/inspect_key/' + id, function (result) {
         list_values(result);
     });
@@ -52,9 +70,35 @@ function list_values(values) {
         tr.appendChild(td0);
         tr.appendChild(td1);
         tr.appendChild(td2);
-        old_tr.insertAdjacentElement("afterend", tr);
-        old_tr = tr;
+        // tr.addEventListener('click', function() {console.log("AAAAA")});
+        old_tr.appendChild(tr)
+        // old_tr.insertAdjacentElement("afterend", tr);
+        // old_tr = tr;
     }
+}
+function new_key() {
+
+}
+function new_value() {
+
+}
+function rename_key() {
+
+}
+function delete_key() {
+
+}
+function find_string() {
+
+}
+function rename_value() {
+
+}
+function edit_value() {
+
+}
+function delete_value() {
+
 }
 // Sidenav checkbox functions
 function computer() {

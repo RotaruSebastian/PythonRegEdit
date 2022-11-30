@@ -54,9 +54,24 @@ td, tr {
     text-align: left;
 }
 
+tbody tr:hover.selected td,
+tbody tr:hover td {
+    background-color: #8edde3;
+    cursor: pointer;
+}
+
+tbody tr.selected td {
+    background-color: cadetblue;
+    cursor: pointer;
+}
+
 a {
     text-decoration: none;
     color: black;
+}
+
+a:hover {
+    background-color: #8edde3;
 }
 
 a:focus {

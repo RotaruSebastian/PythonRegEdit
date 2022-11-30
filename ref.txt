@@ -1,0 +1,2 @@
+https://stackoverflow.com/questions/46931103/making-a-dragbar-to-resize-divs-inside-css-grids
+https://stackoverflow.com/questions/31542120/table-row-that-highlights-on-hover-and-changes-color-on-click
