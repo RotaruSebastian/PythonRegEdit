@@ -51,20 +51,24 @@
     <div class="handler"></div>
     <div id="main" class="compartment">
         <h4 id="key_name" data-parent=""></h4>
-        {#    <button onclick="new_key()">New Key</button>#}
-        {#    <button onclick="new_value()">New Value</button>#}
-        {#    <button onclick="rename_key()">Rename</button>#}
-        {#    <button onclick="rename_value()">Rename Value</button>#}
-        {#    <button onclick="edit_value()">Edit Value</button>#}
-        {#    <button onclick="delete_key()">Delete Key</button>#}
-        {#    <button onclick="delete_value()">Delete Value</button>#}
-        {#    <button onclick="find()">Find</button>#}
+            <button onclick="new_key()" class="key_dependent" disabled>New Key</button>
+            <button onclick="new_value()" class="key_dependent" disabled>New Value</button>
+            <button onclick="rename_key()" class="key_dependent" disabled>Rename Key</button>
+            <button onclick="delete_key()" class="key_dependent" disabled>Delete Key</button>
+            <button onclick="find_string()" class="key_dependent" disabled>Find String</button>
+            <button onclick="rename_value()" class="value_dependent" disabled>Rename Value</button>
+            <button onclick="edit_value()" class="value_dependent" disabled>Edit Value</button>
+            <button onclick="delete_value()" class="value_dependent" disabled>Delete Value</button>
         <table>
-            <tr id="selected_key">
-                <th><div>Name</div></th>
-                <th><div>Type</div></th>
-                <th><div>Data</div></th>
-            </tr>
+            <thead>
+                <tr>
+                    <th><div>Name</div></th>
+                    <th><div>Type</div></th>
+                    <th><div>Data</div></th>
+                </tr>
+            </thead>
+            <tbody id="selected_key">
+            </tbody>
         </table>
     </div>
 </div>
