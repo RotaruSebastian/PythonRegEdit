@@ -51,7 +51,7 @@ function select_key(id) {
     for(let button in value_buttons) {
         value_buttons[button].disabled = true;
     }
-    $.getJSON('/inspect_key/' + id, function (result) {
+    $.getJSON('/inspect_key/' + encodeURIComponent(id), function (result) {
         list_values(result);
     });
 }
@@ -77,9 +77,41 @@ function list_values(values) {
 function new_key() {
     let id = document.getElementById('key_name');
     id = id.dataset.name;
-    $.getJSON('/create_key/' + id, function () {
+    console.log(id);
+    $.getJSON('/create_key/' + encodeURIComponent(id), function () {
         update_branch(id + '\\');
     });
+}
+function new_value() {
+    // chestii prompt
+}
+function rename_key() {
+    // savekey + loadkey
+}
+function delete_key() {
+    let id = document.getElementById('key_name');
+    id = id.dataset.name;
+    if(id.length > 2) {
+        $.getJSON('/delete_key/' + encodeURIComponent(id), function () {
+            id = id.slice(0, id.lastIndexOf('\\'));
+            update_branch(id + '\\');
+            select_key(id);
+        });
+    } else {
+        window.alert('Can not delete main keys');
+    }
+}
+function find_string() {
+
+}
+function rename_value() {
+    // chestii prompt
+}
+function edit_value() {
+    // chestii prompt
+}
+function delete_value() {
+
 }
 function update_branch(id) {
     let checkbox = document.getElementById(id);
@@ -87,27 +119,6 @@ function update_branch(id) {
         remove_branch(id);
         expand_branch(id);
     }
-}
-function new_value() {
-
-}
-function rename_key() {
-
-}
-function delete_key() {
-
-}
-function find_string() {
-
-}
-function rename_value() {
-
-}
-function edit_value() {
-
-}
-function delete_value() {
-
 }
 // Sidenav checkbox functions
 function computer() {
@@ -128,7 +139,7 @@ function checkbox(id) {
     }
 }
 function expand_branch(id) {
-    $.getJSON('/expand_key/' + id, function (result) {
+    $.getJSON('/expand_key/' + encodeURIComponent(id), function (result) {
         add_elem(result, id);
     });
 }

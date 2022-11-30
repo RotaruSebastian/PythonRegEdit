@@ -2,6 +2,10 @@
     white-space: nowrap;
 }
 
+.in_progress {
+    color: red;
+}
+
 html, body {
     margin: 0;
     height: 100vh;
