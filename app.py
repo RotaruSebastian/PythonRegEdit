@@ -1,4 +1,5 @@
 from flask import Flask, render_template
+from urllib.parse import unquote
 import winreg
 import json
 
@@ -39,29 +40,57 @@ def get_params(param):
 
 @app.route('/create_key/<path:param>')
 def create_key(param):
+    param = unquote(param)
     base_key, sub_key = get_params(param)
-    handle = winreg.OpenKey(base_key, sub_key)
-    current_keys = []
-    sub_key_count = winreg.QueryInfoKey(handle)[0]
-    for i in range(sub_key_count):
-        current_keys.append(winreg.EnumKey(handle, i))
-    new_key_base_name = 'New Key #'
-    i = 1
-    while new_key_base_name + str(i) in current_keys:
-        i += 1
-    new_key = winreg.CreateKey(handle, new_key_base_name + str(i))
-    new_key.Close()
-    handle.Close()
+    try:
+        handle = winreg.OpenKey(base_key, sub_key)
+        current_keys = []
+        sub_key_count = winreg.QueryInfoKey(handle)[0]
+        for i in range(sub_key_count):
+            current_keys.append(winreg.EnumKey(handle, i))
+        new_key_base_name = 'New Key #'
+        i = 1
+        while new_key_base_name + str(i) in current_keys:
+            i += 1
+        new_key = winreg.CreateKey(handle, new_key_base_name + str(i))
+        new_key.Close()
+        handle.Close()
+    except OSError as e:
+        print(e)
     return json.dumps([])
 
 
 @app.route('/delete_key/<path:param>')
 def delete_key(param):
-    print('delete_key')
+    param = unquote(param)
+    base_key, sub_key = get_params(param)
+    try:
+        handle = winreg.OpenKey(base_key, sub_key)
+        delete_sub_key(handle)
+        handle.Close()
+    except OSError as e:
+        print(e)
+    return json.dumps([])
+
+
+def delete_sub_key(handle):
+    while True:
+        try:
+            sub_key = winreg.EnumKey(handle, 0)
+            sub_handle = winreg.OpenKey(handle, sub_key)
+            delete_sub_key(sub_handle)
+            sub_handle.Close()
+        except OSError:
+            break
+    try:
+        winreg.DeleteKey(handle, "")
+    except OSError as e:
+        print(e)
 
 
 @app.route('/inspect_key/<path:param>')
 def inspect_key(param):
+    param = unquote(param)
     base_key, sub_key = get_params(param)
     result = []
     found_default = False
