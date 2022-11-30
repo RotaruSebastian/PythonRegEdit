@@ -25,11 +25,13 @@ document.addEventListener('mousemove', function(e) {
     sidenavController.style.width = (Math.max(boxAminWidth, pointerRelativeX - 8)) + 'px';
     sidenavController.style.flexGrow = '0';
 });
-document.addEventListener('mouseup', function(e) {
+document.addEventListener('mouseup', function() {
     isHandlerDragging = false;
 });
 // Main panel
-$('tbody').on('click', 'tr', function(e) {
+$('tbody').on('click', 'tr', function() {
+    let key_name = document.getElementById('key_name');
+    key_name.dataset.value = this.id;
     $(this)
         .toggleClass('selected')
         .siblings('.selected')
@@ -56,12 +58,15 @@ function select_key(id) {
     });
 }
 function list_values(values) {
-    let old_tr = document.querySelectorAll('#new_key');
-    $(old_tr).remove();
-    old_tr = document.getElementById('selected_key');
+    let old_tr = document.getElementById('selected_key');
+    let child = old_tr.lastElementChild;
+    while(child) {
+        child.remove();
+        child = old_tr.lastElementChild;
+    }
     for(let value in values) {
         const tr = document.createElement('tr');
-        tr.id = 'new_key';
+        tr.id = values[value][0];
         const td0 = document.createElement('td');
         td0.textContent = values[value][0];
         const td1 = document.createElement('td');
@@ -77,7 +82,6 @@ function list_values(values) {
 function new_key() {
     let id = document.getElementById('key_name');
     id = id.dataset.name;
-    console.log(id);
     $.getJSON('/create_key/' + encodeURIComponent(id), function () {
         update_branch(id + '\\');
     });
@@ -111,10 +115,31 @@ function edit_value() {
     // chestii prompt
 }
 function delete_value() {
-
+    let key_name = document.getElementById('key_name');
+    let id = key_name.dataset.name;
+    let value = key_name.dataset.value;
+    let string = id + '\\\\value\\\\' + value;
+    console.log(string);
+    $.getJSON('/delete_value/' + encodeURIComponent(string), function (result) {
+        console.log(result);
+        update_table();
+    });
+}
+function update_table() {
+    let value = document.getElementById('key_name').dataset.value
+    value = document.getElementById(value);
+    value.remove();
+    value = document.getElementById('(default)');
+    $(value)
+        .toggleClass('selected')
+        .siblings('.selected')
+        .removeClass('selected');
+    let key_name = document.getElementById('key_name');
+    key_name.dataset.value = '(default)';
 }
 function update_branch(id) {
     let checkbox = document.getElementById(id);
+    checkbox.style.visibility = 'visible';
     if(checkbox.checked === true) {
         remove_branch(id);
         expand_branch(id);
