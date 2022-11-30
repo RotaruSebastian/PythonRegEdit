@@ -5,6 +5,29 @@ main_keys = {
     3: 'HKEY_CURRENT_USER',
     4: 'HKEY_CURRENT_CONFIG'
 }
+// Resize
+let handler = document.querySelector('.handler');
+let wrapper = handler.closest('.container');
+let sidenavController = wrapper.querySelector('#sidenav');
+let isHandlerDragging = false;
+document.addEventListener('mousedown', function(e) {
+    if (e.target === handler) {
+    isHandlerDragging = true;
+    }
+});
+document.addEventListener('mousemove', function(e) {
+    if (!isHandlerDragging) {
+        return false;
+    }
+    let containerOffsetLeft = wrapper.offsetLeft;
+    let pointerRelativeX = e.clientX - containerOffsetLeft;
+    let boxAminWidth = 150;
+    sidenavController.style.width = (Math.max(boxAminWidth, pointerRelativeX - 8)) + 'px';
+    sidenavController.style.flexGrow = '0';
+});
+document.addEventListener('mouseup', function(e) {
+    isHandlerDragging = false;
+});
 // Main panel
 function select_key(id) {
     let h = document.getElementById("key_name");
