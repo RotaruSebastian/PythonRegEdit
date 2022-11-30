@@ -29,24 +29,25 @@ document.addEventListener('mouseup', function(e) {
     isHandlerDragging = false;
 });
 // Main panel
-$("tbody").on('click', 'tr', function(e) {
+$('tbody').on('click', 'tr', function(e) {
     $(this)
         .toggleClass('selected')
         .siblings('.selected')
         .removeClass('selected');
-    let value_buttons = document.querySelectorAll(".value_dependent");
+    let value_buttons = document.querySelectorAll('.value_dependent');
     for(let button in value_buttons) {
         value_buttons[button].disabled = false;
     }
 });
 function select_key(id) {
-    let h = document.getElementById("key_name");
-    let key_buttons = document.querySelectorAll(".key_dependent");
+    let h = document.getElementById('key_name');
+    let key_buttons = document.querySelectorAll('.key_dependent');
     h.textContent = main_keys[id[0]] + id.slice(1);
+    h.dataset.name = id;
     for(let button in key_buttons) {
         key_buttons[button].disabled = false;
     }
-    let value_buttons = document.querySelectorAll(".value_dependent");
+    let value_buttons = document.querySelectorAll('.value_dependent');
     for(let button in value_buttons) {
         value_buttons[button].disabled = true;
     }
@@ -70,14 +71,22 @@ function list_values(values) {
         tr.appendChild(td0);
         tr.appendChild(td1);
         tr.appendChild(td2);
-        // tr.addEventListener('click', function() {console.log("AAAAA")});
         old_tr.appendChild(tr)
-        // old_tr.insertAdjacentElement("afterend", tr);
-        // old_tr = tr;
     }
 }
 function new_key() {
-
+    let id = document.getElementById('key_name');
+    id = id.dataset.name;
+    $.getJSON('/create_key/' + id, function () {
+        update_branch(id + '\\');
+    });
+}
+function update_branch(id) {
+    let checkbox = document.getElementById(id);
+    if(checkbox.checked === true) {
+        remove_branch(id);
+        expand_branch(id);
+    }
 }
 function new_value() {
 
@@ -102,12 +111,12 @@ function delete_value() {
 }
 // Sidenav checkbox functions
 function computer() {
-    let checkbox = document.getElementById("Computer");
-    let main_keys = document.getElementById("main_keys");
+    let checkbox = document.getElementById('Computer');
+    let main_keys = document.getElementById('main_keys');
     if(checkbox.checked === true) {
-        main_keys.style.visibility="visible";
+        main_keys.style.visibility='visible';
     } else {
-        main_keys.style.visibility="hidden";
+        main_keys.style.visibility='hidden';
     }
 }
 function checkbox(id) {
@@ -127,34 +136,38 @@ function add_elem(result, id) {
     const div = document.createElement('div');
     div.id = id + '\\sub';
     const ul = document.createElement('ul');
+    ul.it = id + '\\sub_ul';
     for(let sub_key in result) {
-        let li = document.createElement('li');
-        let input = document.createElement('input');
-        input.type = 'checkbox';
-        input.id = id + result[sub_key][1] + '\\';
-        if(result[sub_key][0] === '0') {
-            input.style.visibility = 'hidden';
-        }
-        input.addEventListener('click', function () {
-            return checkbox(input.id);
-        }, false);
-        let label = document.createElement('label');
-        label.htmlFor = input.id;
-        let a = document.createElement('a');
-        a.id = input.id + '\\\\_label';
-        a.textContent = ' 📁 ' + result[sub_key][1];
-        a.href = "#";
-        a.addEventListener('click', function () {
-            return select_key(id + result[sub_key][1]);
-        }, false);
-        label.appendChild(a)
-        li.appendChild(input);
-        li.appendChild(label);
-        ul.appendChild(li);
+        ul.appendChild(update_tree(id, result[sub_key]));
     }
     div.appendChild(ul);
     const parent = document.getElementById(id + '\\\\_label');
-    parent.insertAdjacentElement("afterend", div);
+    parent.insertAdjacentElement('afterend', div);
+}
+function update_tree(id, sub_key) {
+    let li = document.createElement('li');
+    let input = document.createElement('input');
+    input.type = 'checkbox';
+    input.id = id + sub_key[1] + '\\';
+    if(sub_key[0] === '0') {
+        input.style.visibility = 'hidden';
+    }
+    input.addEventListener('click', function () {
+        return checkbox(input.id);
+    }, false);
+    let label = document.createElement('label');
+    label.htmlFor = input.id;
+    let a = document.createElement('a');
+    a.id = input.id + '\\\\_label';
+    a.textContent = ' 📁 ' + sub_key[1];
+    a.href = '#';
+    a.addEventListener('click', function () {
+        return select_key(id + sub_key[1]);
+    }, false);
+    label.appendChild(a)
+    li.appendChild(input);
+    li.appendChild(label);
+    return li;
 }
 function remove_branch(id) {
     const elem = document.getElementById(id + '\\sub');
