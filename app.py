@@ -30,18 +30,25 @@ value_types = {
 }
 
 
-def get_params(param):
+def get_key(param):
+    param = unquote(param)
     base_key = main_keys[int(param[0])]
     sub_key = str(param[2:])
-    sub_key = sub_key.removesuffix('/')
-    sub_key = sub_key.replace('/', '\\')
     return base_key, sub_key
+
+
+def get_key_value(param):
+    param = unquote(param)
+    pos = param.find('\\\\value\\\\')
+    base_key = main_keys[int(param[0])]
+    sub_key = str(param[2:pos])
+    value = str(param[pos + 9:])
+    return base_key, sub_key, value
 
 
 @app.route('/create_key/<path:param>')
 def create_key(param):
-    param = unquote(param)
-    base_key, sub_key = get_params(param)
+    base_key, sub_key = get_key(param)
     try:
         handle = winreg.OpenKey(base_key, sub_key)
         current_keys = []
@@ -56,20 +63,19 @@ def create_key(param):
         new_key.Close()
         handle.Close()
     except OSError as e:
-        print(e)
+        return json.dumps(str(e))
     return json.dumps([])
 
 
 @app.route('/delete_key/<path:param>')
 def delete_key(param):
-    param = unquote(param)
-    base_key, sub_key = get_params(param)
+    base_key, sub_key = get_key(param)
     try:
         handle = winreg.OpenKey(base_key, sub_key)
         delete_sub_key(handle)
         handle.Close()
     except OSError as e:
-        print(e)
+        return json.dumps(str(e))
     return json.dumps([])
 
 
@@ -85,13 +91,24 @@ def delete_sub_key(handle):
     try:
         winreg.DeleteKey(handle, "")
     except OSError as e:
-        print(e)
+        return json.dumps(str(e))
+
+
+@app.route('/delete_value/<path:param>')
+def delete_value(param):
+    base_key, sub_key, value = get_key_value(param)
+    try:
+        handle = winreg.OpenKey(base_key, sub_key, access=winreg.KEY_WRITE)
+        winreg.DeleteValue(handle, value)
+        handle.Close()
+    except OSError as e:
+        return json.dumps(str(e))
+    return json.dumps([])
 
 
 @app.route('/inspect_key/<path:param>')
 def inspect_key(param):
-    param = unquote(param)
-    base_key, sub_key = get_params(param)
+    base_key, sub_key = get_key(param)
     result = []
     found_default = False
     try:
@@ -109,13 +126,13 @@ def inspect_key(param):
         if not found_default:
             result = [['(default)', '(value not set)', 'REG_SZ']] + result
     except OSError as e:
-        print(e)
+        return json.dumps(str(e))
     return json.dumps(result)
 
 
 @app.route('/expand_key/<path:param>')
 def expand_key(param):
-    base_key, sub_key = get_params(param)
+    base_key, sub_key = get_key(param)
     result = []
     try:
         handle = winreg.OpenKey(base_key, sub_key)
@@ -128,7 +145,7 @@ def expand_key(param):
             result.append([has_sub_keys, sub_sub_key])
         handle.Close()
     except OSError as e:
-        print(sub_key, e)
+        return json.dumps(str(e))
     return json.dumps(result)
 
 
