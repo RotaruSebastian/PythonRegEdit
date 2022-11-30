@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registry Editor</title>
+    <link rel="icon" type="image/x-icon" href="../static/reg_icon.ico">
+    <link rel="stylesheet" href="../static/style.css">
+    <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+</head>
+<body>
+<div class="main">
+    <h4 id="key_name" data-parent=""></h4>
+{#    <button onclick="new_key()">New Key</button>#}
+{#    <button onclick="new_value()">New Value</button>#}
+{#    <button onclick="rename_key()">Rename</button>#}
+{#    <button onclick="rename_value()">Rename Value</button>#}
+{#    <button onclick="edit_value()">Edit Value</button>#}
+{#    <button onclick="delete_key()">Delete Key</button>#}
+{#    <button onclick="delete_value()">Delete Value</button>#}
+{#    <button onclick="find()">Find</button>#}
+    <table>
+        <tr id="selected_key">
+            <th><div>Name</div></th>
+            <th><div>Type</div></th>
+            <th><div>Data</div></th>
+        </tr>
+    </table>
+</div>
+<div class="sidenav">
+    <input type="checkbox" id="Computer" checked onclick="computer()">
+    <label for="Computer" id="Computer_label"> 🖥️ Computer</label>
+    <div id="main_keys">
+        <ul>
+            <li>
+                <input type="checkbox" id="0\" onclick="checkbox(id)">
+                <label for="0\">
+                    <a id="0\\\_label" href="#" onclick="select_key('0\\')"> 📁 HKEY_CLASSES_ROOT</a>
+                </label>
+            </li>
+            <li>
+                <input type="checkbox" id="1\" onclick="checkbox(id)">
+                <label for="1\">
+                    <a id="1\\\_label" href="#" onclick="select_key('1\\')"> 📁 HKEY_CURRENT_USER</a>
+                </label>
+            </li>
+            <li>
+                <input type="checkbox" id="2\" onclick="checkbox(id)">
+                <label for="2\">
+                    <a id="2\\\_label" href="#" onclick="select_key('2\\')"> 📁 HKEY_LOCAL_MACHINE</a>
+                </label>
+            </li>
+            <li>
+                <input type="checkbox" id="3\" onclick="checkbox(id)">
+                <label for="3\">
+                    <a id="3\\\_label" href="#" onclick="select_key('3\\')"> 📁 HKEY_USERS</a>
+                </label>
+            </li>
+            <li>
+                <input type="checkbox" id="4\" onclick="checkbox(id)">
+                <label for="4\">
+                    <a id="4\\\_label" href="#" onclick="select_key('4\\')"> 📁 HKEY_CURRENT_CONFIG</a>
+                </label>
+            </li>
+        </ul>
+    </div>
+</div>
+<script type="text/javascript" src="../static/script.js"></script>
+</body>
+</html>

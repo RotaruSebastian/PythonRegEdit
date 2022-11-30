@@ -1,0 +1,95 @@
+main_keys = {
+    0: 'HKEY_CLASSES_ROOT',
+    1: 'HKEY_CURRENT_USER',
+    2: 'HKEY_LOCAL_MACHINE',
+    3: 'HKEY_CURRENT_USER',
+    4: 'HKEY_CURRENT_CONFIG'
+}
+// Main panel
+function select_key(id) {
+    let h = document.getElementById("key_name");
+    h.textContent = main_keys[id[0]] + id.slice(1);
+    $.getJSON('/inspect_key/' + id, function (result) {
+        list_values(result);
+    });
+}
+function list_values(values) {
+    let old_tr = document.querySelectorAll('#new_key');
+    $(old_tr).remove();
+    old_tr = document.getElementById('selected_key');
+    for(let value in values) {
+        const tr = document.createElement('tr');
+        tr.id = 'new_key';
+        const td0 = document.createElement('td');
+        td0.textContent = values[value][0];
+        const td1 = document.createElement('td');
+        td1.textContent = values[value][2];
+        const td2 = document.createElement('td');
+        td2.textContent = values[value][1];
+        tr.appendChild(td0);
+        tr.appendChild(td1);
+        tr.appendChild(td2);
+        old_tr.insertAdjacentElement("afterend", tr);
+        old_tr = tr;
+    }
+}
+// Sidenav checkbox functions
+function computer() {
+    let checkbox = document.getElementById("Computer");
+    let main_keys = document.getElementById("main_keys");
+    if(checkbox.checked === true) {
+        main_keys.style.visibility="visible";
+    } else {
+        main_keys.style.visibility="hidden";
+    }
+}
+function checkbox(id) {
+    let checkbox = document.getElementById(id);
+    if(checkbox.checked === true) {
+        expand_branch(id);
+    } else {
+        remove_branch(id);
+    }
+}
+function expand_branch(id) {
+    $.getJSON('/expand_key/' + id, function (result) {
+        add_elem(result, id);
+    });
+}
+function add_elem(result, id) {
+    const div = document.createElement('div');
+    div.id = id + '\\sub';
+    const ul = document.createElement('ul');
+    for(let sub_key in result) {
+        let li = document.createElement('li');
+        let input = document.createElement('input');
+        input.type = 'checkbox';
+        input.id = id + result[sub_key][1] + '\\';
+        if(result[sub_key][0] === '0') {
+            input.style.visibility = 'hidden';
+        }
+        input.addEventListener('click', function () {
+            return checkbox(input.id);
+        }, false);
+        let label = document.createElement('label');
+        label.htmlFor = input.id;
+        let a = document.createElement('a');
+        a.id = input.id + '\\\\_label';
+        a.textContent = ' 📁 ' + result[sub_key][1];
+        a.href = "#";
+        a.addEventListener('click', function () {
+            return select_key(id + result[sub_key][1]);
+        }, false);
+        label.appendChild(a)
+        li.appendChild(input);
+        li.appendChild(label);
+        ul.appendChild(li);
+    }
+    div.appendChild(ul);
+    const parent = document.getElementById(id + '\\\\_label');
+    parent.insertAdjacentElement("afterend", div);
+}
+function remove_branch(id) {
+    const elem = document.getElementById(id + '\\sub');
+    elem.remove();
+}

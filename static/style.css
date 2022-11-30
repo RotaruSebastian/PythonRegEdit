@@ -1,0 +1,39 @@
+*{
+    white-space: nowrap;
+}
+
+#main_keys {
+    visibility: visible;
+}
+
+.sidenav {
+    height: 100%;
+    width: 300px;
+    position: fixed;
+    overflow: scroll;
+    z-index: 1;
+    top: 0;
+    left: 0;
+}
+
+.main {
+    left: 300px;
+    position: fixed;
+}
+
+ul {
+    list-style: none;
+}
+
+td, tr {
+    text-align: left;
+}
+
+a {
+    text-decoration: none;
+    color: black;
+}
+
+a:focus {
+    background-color: cadetblue;
+}
