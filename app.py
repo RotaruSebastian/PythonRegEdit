@@ -63,7 +63,7 @@ def get_key_value_data(param):
 def key_count(handle, check=0):
     try:
         return win32api.RegQueryInfoKey(handle)[check]
-    except OSError:
+    except win32api.error:
         return -1
 
 
@@ -90,7 +90,7 @@ def create_key(param):
         new_key = win32api.RegCreateKey(handle, new_key_name)
         win32api.RegCloseKey(new_key)
         win32api.RegCloseKey(handle)
-    except OSError as e:
+    except win32api.error as e:
         return dumps(f'[CREATE_KEY]: {str(e)}')
     return dumps('[CREATE_KEY]: Success')
 
@@ -122,7 +122,7 @@ def create_value(param):
             value_data = ''
         win32api.RegSetValueEx(handle, new_value_name, None, value_type, value_data)
         win32api.RegCloseKey(handle)
-    except OSError as e:
+    except win32api.error as e:
         return dumps(f'[CREATE_VALUE]: {str(e)}')
     return dumps('[CREATE_VALUE]: Success')
 
@@ -139,7 +139,7 @@ def edit_value(param):
             value_data = value_data.split('[\\end]')
         win32api.RegSetValueEx(handle, value_name, None, value_type, value_data)
         win32api.RegCloseKey(handle)
-    except OSError as e:
+    except win32api.error as e:
         return dumps(f'[EDIT_VALUE]: {str(e)}')
     return dumps('[EDIT_VALUE]: Success')
 
@@ -153,35 +153,38 @@ def rename_value(param):
         win32api.RegSetValueEx(handle, new_name, None, val[1], val[0])
         win32api.RegDeleteValue(handle, old_name)
         win32api.RegCloseKey(handle)
-    except OSError as e:
+    except win32api.error as e:
         return dumps(f'[EDIT_VALUE]: {str(e)}')
     return dumps('[EDIT_VALUE]: Success')
 
 
-# @app.route('/rename_key/<path:param>')
-# def rename_key(param):
-#     base_key, sub_key, name = get_key_value(param)
-#     try:
-#         sub_key = sub_key[0: sub_key.rfind('\\')]
-#         handle = win32api.RegOpenKey(win32con.HKEY_CURRENT_CONFIG, sub_key, 0, win32con.KEY_ALL_ACCESS)
-#         handle2 = win32api.RegCreateKey(win32con.HKEY_CURRENT_CONFIG, name)
-#         win32api.RegCopyTree(handle, None, handle2)
-#         win32api.RegCloseKey(handle)
-#     except OSError:
-#         return -1
-#     return 0
-#     return dumps('[RENAME_KEY]: Success')
+@app.route('/rename_key/<path:param>')
+def rename_key(param):
+    base_key, sub_key, name = get_key_value(param)
+    try:
+        handle = win32api.RegOpenKeyEx(
+            base_key, sub_key, 0, win32con.KEY_QUERY_VALUE | win32con.KEY_ENUMERATE_SUB_KEYS | win32con.KEY_SET_VALUE
+        )
+        handle2 = win32api.RegCreateKey(base_key, name)
+        win32api.RegCopyTree(handle, None, handle2)
+        delete_sub_key(handle)
+        win32api.RegCloseKey(handle)
+        win32api.RegDeleteKey(base_key, sub_key)
+        win32api.RegCloseKey(handle2)
+    except win32api.error as e:
+        return dumps(f'[RENAME_KEY]: {str(e)}')
+    return dumps('[RENAME_KEY]: Success')
 
 
 @app.route('/delete_key/<path:param>')
 def delete_key(param):
     base_key, sub_key = get_key(param)
     try:
-        handle = win32api.RegOpenKeyEx(base_key, sub_key, 0, win32con.KEY_ALL_ACCESS)
+        handle = win32api.RegOpenKeyEx(base_key, sub_key, 0, win32con.KEY_SET_VALUE)
         delete_sub_key(handle)
         win32api.RegCloseKey(handle)
         win32api.RegDeleteKey(base_key, sub_key)
-    except OSError as e:
+    except win32api.error as e:
         return dumps(f'[DELETE_KEY]: {str(e)}')
     return dumps('[DELETE_KEY]: Success')
 
@@ -191,11 +194,11 @@ def delete_sub_key(handle):
         count = key_count(handle)
         for i in range(count):
             sub_key = win32api.RegEnumKey(handle, 0)
-            sub_handle = win32api.RegOpenKeyEx(handle, sub_key, 0, win32con.KEY_ALL_ACCESS)
+            sub_handle = win32api.RegOpenKeyEx(handle, sub_key, 0, win32con.KEY_SET_VALUE)
             delete_sub_key(sub_handle)
             win32api.RegCloseKey(sub_handle)
             win32api.RegDeleteKey(handle, sub_key)
-    except OSError:
+    except win32api.error:
         return
 
 
@@ -206,7 +209,7 @@ def delete_value(param):
         handle = win32api.RegOpenKeyEx(base_key, sub_key, 0, win32con.KEY_SET_VALUE)
         win32api.RegDeleteValue(handle, value)
         win32api.RegCloseKey(handle)
-    except OSError as e:
+    except win32api.error as e:
         return dumps(f'[DELETE_VALUE]: {str(e)}')
     return dumps('[DELETE_VALUE]: Success')
 
@@ -230,7 +233,7 @@ def inspect_key(param):
         win32api.RegCloseKey(handle)
         if not found_default:
             result = [['(default)', '(value not set)', 'REG_SZ']] + result
-    except OSError as e:
+    except win32api.error as e:
         return dumps(f'[INSPECT_KEY]: {str(e)}')
     return dumps(result)
 
@@ -244,12 +247,12 @@ def expand_key(param):
         length = key_count(handle)
         for i in range(length):
             sub_sub_key = win32api.RegEnumKey(handle, i)
-            temp_handle = win32api.RegOpenKeyEx(handle, sub_sub_key, sam=win32con.KEY_QUERY_VALUE)
+            temp_handle = win32api.RegOpenKeyEx(handle, sub_sub_key, 0, win32con.KEY_QUERY_VALUE)
             has_sub_keys = str(win32api.RegQueryInfoKey(temp_handle)[0])
             win32api.RegCloseKey(temp_handle)
             result.append([has_sub_keys, sub_sub_key])
         win32api.RegCloseKey(handle)
-    except OSError as e:
+    except win32api.error as e:
         return dumps(f'[EXPAND_KEY]: {str(e)}')
     return dumps(result)
 
