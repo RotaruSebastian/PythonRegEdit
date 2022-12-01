@@ -8,7 +8,7 @@ import winreg
 
 app = Flask(__name__)
 
-main_keys = {
+MAIN_KEYS = {
     0: winreg.HKEY_CLASSES_ROOT,
     1: winreg.HKEY_CURRENT_USER,
     2: winreg.HKEY_LOCAL_MACHINE,
@@ -16,7 +16,7 @@ main_keys = {
     4: winreg.HKEY_CURRENT_CONFIG
 }
 
-value_types = {
+VALUE_TYPES = {
     winreg.REG_BINARY: 'REG_BINARY',
     winreg.REG_DWORD: 'REG_DWORD',
     winreg.REG_DWORD_BIG_ENDIAN: 'REG_DWORD_BIG_ENDIAN',
@@ -31,56 +31,94 @@ value_types = {
     winreg.REG_SZ: 'REG_SZ'
 }
 
-modifiable_types = [winreg.REG_SZ, winreg.REG_MULTI_SZ, winreg.REG_EXPAND_SZ, winreg.REG_DWORD]
+MODIFIABLE_TYPES = [winreg.REG_SZ, winreg.REG_MULTI_SZ, winreg.REG_EXPAND_SZ, winreg.REG_DWORD]
 
 
-def win32_handle(handle):
-    if handle == winreg.HKEY_CLASSES_ROOT:
+def win32_handle(constant):
+    """Returns a win32con constant corresponding to the same registry key as a given winreg constant.
+
+    :param constant: winreg constant associated to one of the 5 root registry keys
+    :type constant: int
+    :return: win32con constant associated to the same root registry key as the function parameter
+    :rtype: int
+    """
+
+    if constant == winreg.HKEY_CLASSES_ROOT:
         return HKEY_CLASSES_ROOT
-    elif handle == winreg.HKEY_CURRENT_USER:
+    elif constant == winreg.HKEY_CURRENT_USER:
         return HKEY_CURRENT_USER
-    elif handle == winreg.HKEY_LOCAL_MACHINE:
+    elif constant == winreg.HKEY_LOCAL_MACHINE:
         return HKEY_LOCAL_MACHINE
-    elif handle == winreg.HKEY_USERS:
+    elif constant == winreg.HKEY_USERS:
         return HKEY_USERS
-    elif handle == winreg.HKEY_CURRENT_CONFIG:
+    elif constant == winreg.HKEY_CURRENT_CONFIG:
         return HKEY_CURRENT_CONFIG
 
 
 def get_key_subkey(param):
+    """Gets an url string containing a path to a registry key and returns values required to open it.
+
+    :param param: url string containing a number from 0 to 4 associated to a root key and the path to a registry key
+    :type param: str
+    :return: tuple of winreg int constant for a root key and the path string
+    :rtype: (int, str)
+    """
+
     param = unquote(param)
-    base_key = main_keys[int(param[0])]
+    base_key = MAIN_KEYS[int(param[0])]
     sub_key = str(param[2:])
     return base_key, sub_key
 
 
 def get_key_subkey_param1(param):
+    """Same `get_key_subkey`, but also contains a third parameter, delimited by '\\param1\\'.
+
+    :param param: url string containing a number from 0 to 4, the path to a registry key and a string
+    :type param: str
+    :return: tuple of winreg int constant for a root key, the path string and a second string
+    :rtype: (int, str, str)
+    """
+
     param = unquote(param)
     pos = param.find('\\\\param1\\\\')
-    base_key = main_keys[int(param[0])]
+    base_key = MAIN_KEYS[int(param[0])]
     sub_key = str(param[2:pos])
     value = str(param[pos + 10:])
     return base_key, sub_key, value
 
 
 def get_key_subkey_param1_param2(param):
+    """Same as `get_key_subkey_param1`, but with an extra string parameter, delimited by '\\param2\\'
+
+    :param param: url string containing a number from 0 to 4, the path to a registry key and 2 strings
+    :type param: str
+    :return: tuple of winreg int constant for a root key, the path string and a second string
+    :rtype: (int, str, str, str)
+    """
+
     param = unquote(param)
     pos1 = param.find('\\\\param1\\\\')
     pos2 = param.find('\\\\param2\\\\')
-    base_key = main_keys[int(param[0])]
+    base_key = MAIN_KEYS[int(param[0])]
     sub_key = str(param[2:pos1])
     value = str(param[pos1 + 10: pos2])
     data = str(param[pos2 + 10:])
     return base_key, sub_key, value, data
 
 
-def get_type_from_string(string):
-    for key, value in value_types.items():
-        if value == string:
-            return key
-
-
 def value_number(base_key, sub_key, value):
+    """Gets a registry key handle and name, and the name of a value inside that key, returns the value's index.
+
+    :param base_key: handle for a registry key
+    :type base_key: handle
+    :param sub_key: name of a sub-key of handle
+    :type sub_key: str
+    :param value: name of a value from the key described by handle and sub_key
+    :type value: str
+    :return: index of value inside the key, 0 if the key could not be opened or value is not inside the key
+    :rtype: int
+    """
+
     try:
         handle = winreg.OpenKey(base_key, sub_key)
         length = winreg.QueryInfoKey(handle)[1]
@@ -95,6 +133,16 @@ def value_number(base_key, sub_key, value):
 
 
 def key_number(base_key, sub_key):
+    """Gets a registry key handle and name, returns index of that key in its parent's subkeys.
+
+    :param base_key: handle for a registry key
+    :type base_key: handle
+    :param sub_key: name of a sub-key of handle
+    :type sub_key: str
+    :return: index of the key inside its parent, 0 if the key could not be opened
+    :rtype: int
+    """
+
     if sub_key.__contains__('\\'):
         pos = sub_key.rfind('\\')
         parent = sub_key[0:pos]
@@ -117,6 +165,17 @@ def key_number(base_key, sub_key):
 
 @app.route('/create_key/<path:param>')
 def create_key(param):
+    """Creates new registry key.
+
+    Receives the path to a registry key and creates a new sub-key inside it, named 'New Key #n', where n is the smallest
+    available number.
+
+    :param param: url string containing path to an existing registry key
+    :type param: str
+    :return: json string confirming the function was successful, or an error message
+    :rtype: str
+    """
+
     base_key, sub_key = get_key_subkey(param)
     try:
         handle = winreg.OpenKey(base_key, sub_key)
@@ -139,6 +198,17 @@ def create_key(param):
 
 @app.route('/create_value/<path:param>')
 def create_value(param):
+    """Creates value inside registry key.
+
+    Receives the path to a registry key and a number associated to a value type and creates a new value inside the key,
+    named 'New Value #n' of the desired type, where n is the smallest available number.
+
+    :param param: url string containing path to an existing registry key and a value type
+    :type param: str
+    :return: json string confirming the function was successful, or an error message
+    :rtype: str
+    """
+
     base_key, sub_key, value_type = get_key_subkey_param1(param)
     try:
         handle = winreg.OpenKey(base_key, sub_key, access=winreg.KEY_QUERY_VALUE | winreg.KEY_SET_VALUE)
@@ -153,9 +223,9 @@ def create_value(param):
             new_value_name = f'New Value #{str(i)}'
         value_type = int(value_type)
         if 0 <= value_type <= 3:
-            value_type = modifiable_types[value_type]
+            value_type = MODIFIABLE_TYPES[value_type]
         else:
-            value_type = modifiable_types[0]
+            value_type = MODIFIABLE_TYPES[0]
         if value_type == winreg.REG_MULTI_SZ:
             value_data = ['']
         elif value_type == winreg.REG_DWORD:
@@ -171,6 +241,16 @@ def create_value(param):
 
 @app.route('/edit_value/<path:param>')
 def edit_value(param):
+    """Changes the data inside a value from a registry key.
+
+    Receives the path to a registry key, a value name and value data, opens the key and changes the given value's data.
+
+    :param param: url string containing path to a key, name of a value and new data for that value
+    :type param: str
+    :return: json string confirming the function was successful, or an error message
+    :rtype: str
+    """
+
     base_key, sub_key, value_name, value_data = get_key_subkey_param1_param2(param)
     try:
         handle = winreg.OpenKey(base_key, sub_key, access=winreg.KEY_QUERY_VALUE | winreg.KEY_SET_VALUE)
@@ -188,6 +268,14 @@ def edit_value(param):
 
 @app.route('/rename_value/<path:param>')
 def rename_value(param):
+    """Renames value in registry key by copying it with a new name and deleting the old one.
+
+    :param param: url string containing path to an existing key, name of an existing value and name for a new value
+    :type param: str
+    :return: json string confirming the function was successful, or an error message
+    :rtype: str
+    """
+
     base_key, sub_key, old_name, new_name = get_key_subkey_param1_param2(param)
     try:
         handle = winreg.OpenKey(base_key, sub_key, access=winreg.KEY_QUERY_VALUE | winreg.KEY_SET_VALUE)
@@ -202,6 +290,14 @@ def rename_value(param):
 
 @app.route('/rename_key/<path:param>')
 def rename_key(param):
+    """Renames registry key by copying it with a new name and deleting the old one.
+
+    :param param: url string containing path to an existing key and name for a new key
+    :type param: str
+    :return: json string confirming the function was successful, or an error message
+    :rtype: str
+    """
+
     base_key, sub_key, name = get_key_subkey_param1(param)
     base_key = win32_handle(base_key)
     base_name = sub_key[0:sub_key.rfind('\\') + 1]
@@ -217,6 +313,14 @@ def rename_key(param):
 
 @app.route('/delete_key/<path:param>')
 def delete_key(param):
+    """Deletes registry keys, with all its sub-keys.
+
+    :param param: url string containing path to an existing key
+    :type param: str
+    :return: json string confirming the function was successful, or an error message
+    :rtype: str
+    """
+
     base_key, sub_key = get_key_subkey(param)
     base_key = win32_handle(base_key)
     try:
@@ -228,6 +332,14 @@ def delete_key(param):
 
 @app.route('/delete_value/<path:param>')
 def delete_value(param):
+    """Deletes value from registry key.
+
+    :param param: url string containing path to an existing key and name of a value
+    :type param: str
+    :return: json string confirming the function was successful, or an error message
+    :rtype: str
+    """
+
     base_key, sub_key, value = get_key_subkey_param1(param)
     try:
         handle = winreg.OpenKey(base_key, sub_key, access=winreg.KEY_SET_VALUE)
@@ -240,6 +352,23 @@ def delete_value(param):
 
 @app.route('/find_string/<path:param>')
 def find_string(param):
+    """Recursively searches for string in registry.
+
+    Receives the path to a registry key, a value name and a string to be searched.
+    The key and value are the starting point.
+    #. Finds the value's index inside the key.
+    #. Calls `recursive_search` starting from index + 1.
+    #. If the search was not successful, finds index of searched key inside parent key.
+    #. Recursively searches parent key starting from the sub-key with the smallest index greater than the previous one.
+    #. Repeats the process until it finds a match or reaches the end of the registry.
+    Returns either the path to a key/value or an empty string.
+
+    :param param: url string containing path to the search starting point (registry key and value)
+    :type param: str
+    :return: json string containing path to first occurrence, or an empty string if there are no matches
+    :rtype: str
+    """
+
     base_key, sub_key, value, search_string = get_key_subkey_param1_param2(param)
     base_key_int = int(param[0])
     start_value = value_number(base_key, sub_key, value)
@@ -253,7 +382,7 @@ def find_string(param):
             sub_key = ''
         elif base_key_int < 4:
             base_key_int += 1
-            base_key = main_keys[base_key_int]
+            base_key = MAIN_KEYS[base_key_int]
             start_key = 0
         else:
             return dumps('')
@@ -269,6 +398,24 @@ def find_string(param):
 
 
 def recursive_search(base_key, sub_key, search_string, start_key=0, start_value=0):
+    """Recursively searches for string in registry key.
+
+    Searches for search_string in values starting from start_value, and then in sub-keys starting from start_key.
+
+    :param base_key: handle for a registry key
+    :type base_key: handle
+    :param sub_key: name of sub-key of handle
+    :type sub_key: str
+    :param search_string: string that must be found
+    :type search_string: str
+    :param start_key: index of first key that will be searched
+    :type start_key: int
+    :param start_value: index of first value that will be searched
+    :type start_value: int
+    :return: path to key and value if search_string is found, or an empty string otherwise
+    :rtype: str
+    """
+
     try:
         handle = winreg.OpenKey(base_key, sub_key)
         length = winreg.QueryInfoKey(handle)
@@ -294,6 +441,14 @@ def recursive_search(base_key, sub_key, search_string, start_key=0, start_value=
 
 @app.route('/inspect_key/<path:param>')
 def inspect_key(param):
+    """Returns a list of names, types and data for each value in a registry key.
+
+    :param param: url string containing path to an existing registry key
+    :type param: str
+    :return: json list of lists containing value-name, value-type, value-data
+    :rtype: str
+    """
+
     base_key, sub_key = get_key_subkey(param)
     result = []
     found_default = False
@@ -306,7 +461,7 @@ def inspect_key(param):
                 found_default = True
                 result = [['(default)', value[1], 'REG_SZ']] + result
             else:
-                value[2] = value_types[value[2]]
+                value[2] = VALUE_TYPES[value[2]]
                 result.append(list(value))
         handle.Close()
         if not found_default:
@@ -318,6 +473,14 @@ def inspect_key(param):
 
 @app.route('/expand_key/<path:param>')
 def expand_key(param):
+    """Returns a list of sub-keys in a registry key.
+
+    :param param: url string containing path to an existing registry key
+    :type param: str
+    :return: json list of strings
+    :rtype: str
+    """
+
     base_key, sub_key = get_key_subkey(param)
     result = []
     try:
