@@ -1,3 +1,4 @@
+from json import dumps
 import unittest
 import win32api
 import win32con
@@ -11,7 +12,7 @@ def string_key_count(path, check=0):
         count = win32api.RegQueryInfoKey(handle)[check]
         win32api.RegCloseKey(handle)
         return count
-    except OSError:
+    except win32api.error:
         return -1
 
 
@@ -22,7 +23,7 @@ def get_value_from_key(path):
         data = win32api.RegQueryValueEx(handle, value)
         win32api.RegCloseKey(handle)
         return str(data[0])
-    except:
+    except win32api.error:
         return 'err'
 
 
@@ -87,8 +88,15 @@ class Test(unittest.TestCase):
         final_count = string_key_count('4\\New Key #1\\New Key #2')
         self.assertLess(final_count, initial_count)
 
-    # def test_rename_key(self):
-    #     self.assertEqual(app.rename_key('4\\New Key #1\\New Key #3\\\\value\\\\abc'), 0)
+    def test_rename_key(self):
+        app.delete_key('4\\abc')
+        app.create_key('4\\')
+        app.create_value('4\\New Key #13\\\\value\\\\3')
+        app.edit_value('4\\New Key #13\\\\value\\\\New Value #1\\\\data\\\\15')
+        self.assertEqual(1, 1)
+        self.assertEqual(app.rename_key('4\\New Key #13\\\\value\\\\abc'), dumps('[RENAME_KEY]: Success'))
+        val = get_value_from_key('4\\abc\\\\value\\\\New Value #1')
+        self.assertEqual(val, '15')
 
 
 if __name__ == '__main__':

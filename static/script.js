@@ -85,7 +85,7 @@ function list_values(values) {
 function new_key() {
     let id = document.getElementById('key_name');
     id = id.dataset.name;
-    $.getJSON('/create_key/' + encodeURIComponent(id), function (result) {
+    $.getJSON('/create_key/' + encodeURIComponent(id), function () {
         if(id.slice(-1) !== '\\') {
             id += '\\';
         }
@@ -105,31 +105,31 @@ function new_value() {
         window.alert('Invalid type');
     }
 }
-// function rename_key() {
-//     let id = document.getElementById('key_name').dataset.name;
-//     if(id.length < 3) {
-//         window.alert('Can not rename base key');
-//         return;
-//     }
-//     let base_name = id.split('\\');
-//     base_name.pop();
-//     base_name = base_name.join('\\');
-//     let new_name = prompt('New name');
-//     if(new_name.includes('\\') || !new_name) {
-//         return;
-//     }
-//     let check_name = base_name + '\\' + new_name;
-//     if(valid_key_name(check_name)) {
-//         check_name = id + '\\\\value\\\\' + new_name;
-//         // $.getJSON('/rename_key/' + encodeURIComponent(check_name), function (result) {
-//         //     console.log(result);
-//         //     update_branch(base_name + '\\', false);
-//         //     select_key(id);
-//         // });
-//     } else {
-//         window.alert('Key name not valid')
-//     }
-// }
+function rename_key() {
+    let id = document.getElementById('key_name').dataset.name;
+    if(id.length < 3) {
+        window.alert('Can not rename base key');
+        return;
+    }
+    let base_name = id.split('\\');
+    base_name.pop();
+    base_name = base_name.join('\\');
+    let new_name = prompt('New name');
+    if(new_name.includes('\\') || !new_name) {
+        return;
+    }
+    let check_name = base_name + '\\' + new_name;
+    if(valid_key_name(check_name)) {
+        check_name = id + '\\\\value\\\\' + new_name;
+        $.getJSON('/rename_key/' + encodeURIComponent(check_name), function (result) {
+            console.log(result);
+            update_branch(base_name + '\\', false);
+            select_key(base_name + '\\' + new_name);
+        });
+    } else {
+        window.alert('Key name not valid')
+    }
+}
 function delete_key() {
     let id = document.getElementById('key_name').dataset.name;
     if(id.length > 2) {
@@ -165,7 +165,7 @@ function rename_value() {
 function edit_value() {
     let key_name = document.getElementById('key_name');
     let id = key_name.dataset.name;
-    let new_value = '';
+    let new_value;
     if(key_name.dataset.type === 'REG_MULTI_SZ') {
         new_value = prompt('Enter strings - use "[\\end]" as delimiter');
     } else {
