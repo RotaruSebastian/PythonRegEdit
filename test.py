@@ -22,7 +22,7 @@ def get_value_from_key(path):
         handle.Close()
         return str(data[0])
     except OSError:
-        return -1
+        return 'err'
 
 
 class Test(unittest.TestCase):
@@ -57,6 +57,18 @@ class Test(unittest.TestCase):
         value = get_value_from_key('4\\New Key #1\\New Key #2\\New Key #1\\\\value\\\\New Value #1')
         self.assertEqual('1', value)
         app.edit_value('4\\New Key #1\\New Key #2\\New Key #1\\\\value\\\\New Value #1\\\\data\\\\0')
+        value = get_value_from_key('4\\New Key #1\\New Key #2\\New Key #1\\\\value\\\\New Value #1')
+        self.assertEqual('0', value)
+
+    def test_rename_value(self):
+        value = get_value_from_key('4\\New Key #1\\New Key #2\\New Key #1\\\\value\\\\New Value #1')
+        self.assertEqual('0', value)
+        app.rename_value('4\\New Key #1\\New Key #2\\New Key #1\\\\value\\\\New Value #1\\\\data\\\\mod')
+        value = get_value_from_key('4\\New Key #1\\New Key #2\\New Key #1\\\\value\\\\New Value #1')
+        self.assertEqual('err', value)
+        value = get_value_from_key('4\\New Key #1\\New Key #2\\New Key #1\\\\value\\\\mod')
+        self.assertEqual('0', value)
+        app.rename_value('4\\New Key #1\\New Key #2\\New Key #1\\\\value\\\\mod\\\\data\\\\New Value #1')
         value = get_value_from_key('4\\New Key #1\\New Key #2\\New Key #1\\\\value\\\\New Value #1')
         self.assertEqual('0', value)
 

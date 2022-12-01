@@ -154,6 +154,20 @@ def edit_value(param):
     return json.dumps('[EDIT_VALUE]: Success')
 
 
+@app.route('/rename_value/<path:param>')
+def rename_value(param):
+    base_key, sub_key, old_name, new_name = get_key_value_data(param)
+    try:
+        handle = winreg.OpenKey(base_key, sub_key, access=winreg.KEY_SET_VALUE | winreg.KEY_QUERY_VALUE)
+        val = winreg.QueryValueEx(handle, old_name)
+        winreg.SetValueEx(handle, new_name, None, val[1], val[0])
+        winreg.DeleteValue(handle, old_name)
+        handle.Close()
+    except OSError as e:
+        return json.dumps(f'[EDIT_VALUE]: {str(e)}')
+    return json.dumps('[EDIT_VALUE]: Success')
+
+
 @app.route('/rename_key/<path:param>')
 def rename_key(param):
     # copiat manual
