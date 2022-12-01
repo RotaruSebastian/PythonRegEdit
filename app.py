@@ -1,37 +1,36 @@
 from flask import Flask, render_template
 from urllib.parse import unquote
-# import win32security
-# import win32api
-import winreg
-import json
+from json import dumps
+import win32con
+import win32api
 
 app = Flask(__name__)
 
 main_keys = {
-    0: winreg.HKEY_CLASSES_ROOT,
-    1: winreg.HKEY_CURRENT_USER,
-    2: winreg.HKEY_LOCAL_MACHINE,
-    3: winreg.HKEY_CURRENT_USER,
-    4: winreg.HKEY_CURRENT_CONFIG
+    0: win32con.HKEY_CLASSES_ROOT,
+    1: win32con.HKEY_CURRENT_USER,
+    2: win32con.HKEY_LOCAL_MACHINE,
+    3: win32con.HKEY_CURRENT_USER,
+    4: win32con.HKEY_CURRENT_CONFIG
 }
 
 value_types = {
-    winreg.REG_BINARY: 'REG_BINARY',
-    winreg.REG_DWORD: 'REG_DWORD',
-    winreg.REG_DWORD_BIG_ENDIAN: 'REG_DWORD_BIG_ENDIAN',
-    winreg.REG_EXPAND_SZ: 'REG_EXPAND_SZ',
-    winreg.REG_LINK: 'REG_LINK',
-    winreg.REG_MULTI_SZ: 'REG_MULTI_SZ',
-    winreg.REG_NONE: 'REG_NONE',
-    winreg.REG_QWORD: 'REG_QWORD',
-    winreg.REG_RESOURCE_LIST: 'REG_RESOURCE_LIST',
-    winreg.REG_FULL_RESOURCE_DESCRIPTOR: 'REG_FULL_RESOURCE_DESCRIPTOR',
-    winreg.REG_RESOURCE_REQUIREMENTS_LIST: 'REG_RESOURCE_REQUIREMENTS_LIST',
-    winreg.REG_SZ: 'REG_SZ'
+    win32con.REG_BINARY: 'REG_BINARY',
+    win32con.REG_DWORD: 'REG_DWORD',
+    win32con.REG_DWORD_BIG_ENDIAN: 'REG_DWORD_BIG_ENDIAN',
+    win32con.REG_EXPAND_SZ: 'REG_EXPAND_SZ',
+    win32con.REG_LINK: 'REG_LINK',
+    win32con.REG_MULTI_SZ: 'REG_MULTI_SZ',
+    win32con.REG_NONE: 'REG_NONE',
+    win32con.REG_QWORD: 'REG_QWORD',
+    win32con.REG_RESOURCE_LIST: 'REG_RESOURCE_LIST',
+    win32con.REG_FULL_RESOURCE_DESCRIPTOR: 'REG_FULL_RESOURCE_DESCRIPTOR',
+    win32con.REG_RESOURCE_REQUIREMENTS_LIST: 'REG_RESOURCE_REQUIREMENTS_LIST',
+    win32con.REG_SZ: 'REG_SZ'
 }
 
 
-modifiable_types = [winreg.REG_SZ, winreg.REG_MULTI_SZ, winreg.REG_EXPAND_SZ, winreg.REG_DWORD]
+modifiable_types = [win32con.REG_SZ, win32con.REG_MULTI_SZ, win32con.REG_EXPAND_SZ, win32con.REG_DWORD]
 
 
 def get_key(param):
@@ -61,18 +60,9 @@ def get_key_value_data(param):
     return base_key, sub_key, value, data
 
 
-# def get_default_data(data):
-#     if data == winreg.REG_SZ or data == winreg.REG_MULTI_SZ or data == winreg.REG_EXPAND_SZ:
-#         return ''
-#     elif data == winreg.REG_DWORD:
-#         return 0
-#     raise OSError
-
-
 def key_count(handle, check=0):
     try:
-        count = winreg.QueryInfoKey(handle)[check]
-        return count
+        return win32api.RegQueryInfoKey(handle)[check]
     except OSError:
         return -1
 
@@ -87,153 +77,138 @@ def get_type_from_string(string):
 def create_key(param):
     base_key, sub_key = get_key(param)
     try:
-        handle = winreg.OpenKey(base_key, sub_key)
+        handle = win32api.RegOpenKeyEx(base_key, sub_key)
         current_keys = []
         sub_key_count = key_count(handle)
         for i in range(sub_key_count):
-            current_keys.append(winreg.EnumKey(handle, i))
+            current_keys.append(win32api.RegEnumKey(handle, i))
         i = 1
         new_key_name = f'New Key #{str(i)}'
         while new_key_name in current_keys:
             i += 1
             new_key_name = f'New Key #{str(i)}'
-        new_key = winreg.CreateKey(handle, new_key_name)
-        new_key.Close()
-        handle.Close()
+        new_key = win32api.RegCreateKey(handle, new_key_name)
+        win32api.RegCloseKey(new_key)
+        win32api.RegCloseKey(handle)
     except OSError as e:
-        return json.dumps(f'[CREATE_KEY]: {str(e)}')
-    return json.dumps('[CREATE_KEY]: Success')
+        return dumps(f'[CREATE_KEY]: {str(e)}')
+    return dumps('[CREATE_KEY]: Success')
 
 
 @app.route('/create_value/<path:param>')
 def create_value(param):
-    base_key, sub_key, value = get_key_value(param)
+    base_key, sub_key, value_type = get_key_value(param)
     try:
-        handle = winreg.OpenKey(base_key, sub_key, access=winreg.KEY_READ | winreg.KEY_WRITE)
+        handle = win32api.RegOpenKeyEx(base_key, sub_key, 0, win32con.KEY_QUERY_VALUE | win32con.KEY_SET_VALUE)
         current_values = []
         value_count = key_count(handle, check=1)
         for i in range(value_count):
-            current_values.append(winreg.EnumValue(handle, i)[0])
+            current_values.append(win32api.RegEnumValue(handle, i)[0])
         i = 1
         new_value_name = f'New Value #{str(i)}'
         while new_value_name in current_values:
             i += 1
             new_value_name = f'New Value #{str(i)}'
-        value = int(value)
-        if 0 <= value <= 3:
-            value = modifiable_types[value]
+        value_type = int(value_type)
+        if 0 <= value_type <= 3:
+            value_type = modifiable_types[value_type]
         else:
-            value = modifiable_types[0]
-        if value == winreg.REG_MULTI_SZ:
-            default = ['']
-        elif value == winreg.REG_DWORD:
-            default = 0
+            value_type = modifiable_types[0]
+        if value_type == win32con.REG_MULTI_SZ:
+            value_data = ['']
+        elif value_type == win32con.REG_DWORD:
+            value_data = 0
         else:
-            default = ''
-        winreg.SetValueEx(handle, new_value_name, None, value, default)
-        handle.Close()
+            value_data = ''
+        win32api.RegSetValueEx(handle, new_value_name, None, value_type, value_data)
+        win32api.RegCloseKey(handle)
     except OSError as e:
-        return json.dumps(f'[CREATE_VALUE]: {str(e)}')
-    return json.dumps('[CREATE_VALUE]: Success')
+        return dumps(f'[CREATE_VALUE]: {str(e)}')
+    return dumps('[CREATE_VALUE]: Success')
 
 
 @app.route('/edit_value/<path:param>')
 def edit_value(param):
-    base_key, sub_key, value, data = get_key_value_data(param)
+    base_key, sub_key, value_name, value_data = get_key_value_data(param)
     try:
-        handle = winreg.OpenKey(base_key, sub_key, access=winreg.KEY_SET_VALUE | winreg.KEY_QUERY_VALUE)
-        data_type = winreg.QueryValueEx(handle, value)[1]
-        if data_type == winreg.REG_DWORD:
-            data = int(data)
-        elif data_type == winreg.REG_MULTI_SZ:
-            data = data.split('[\\end]')
-        winreg.SetValueEx(handle, value, None, data_type, data)
-        handle.Close()
+        handle = win32api.RegOpenKeyEx(base_key, sub_key, 0, win32con.KEY_QUERY_VALUE | win32con.KEY_SET_VALUE)
+        value_type = win32api.RegQueryValueEx(handle, value_name)[1]
+        if value_type == win32con.REG_DWORD:
+            value_data = int(value_data)
+        elif value_type == win32con.REG_MULTI_SZ:
+            value_data = value_data.split('[\\end]')
+        win32api.RegSetValueEx(handle, value_name, None, value_type, value_data)
+        win32api.RegCloseKey(handle)
     except OSError as e:
-        return json.dumps(f'[EDIT_VALUE]: {str(e)}')
-    return json.dumps('[EDIT_VALUE]: Success')
+        return dumps(f'[EDIT_VALUE]: {str(e)}')
+    return dumps('[EDIT_VALUE]: Success')
 
 
 @app.route('/rename_value/<path:param>')
 def rename_value(param):
     base_key, sub_key, old_name, new_name = get_key_value_data(param)
     try:
-        handle = winreg.OpenKey(base_key, sub_key, access=winreg.KEY_SET_VALUE | winreg.KEY_QUERY_VALUE)
-        val = winreg.QueryValueEx(handle, old_name)
-        winreg.SetValueEx(handle, new_name, None, val[1], val[0])
-        winreg.DeleteValue(handle, old_name)
-        handle.Close()
+        handle = win32api.RegOpenKeyEx(base_key, sub_key, 0, win32con.KEY_QUERY_VALUE | win32con.KEY_SET_VALUE)
+        val = win32api.RegQueryValueEx(handle, old_name)
+        win32api.RegSetValueEx(handle, new_name, None, val[1], val[0])
+        win32api.RegDeleteValue(handle, old_name)
+        win32api.RegCloseKey(handle)
     except OSError as e:
-        return json.dumps(f'[EDIT_VALUE]: {str(e)}')
-    return json.dumps('[EDIT_VALUE]: Success')
+        return dumps(f'[EDIT_VALUE]: {str(e)}')
+    return dumps('[EDIT_VALUE]: Success')
 
 
-@app.route('/rename_key/<path:param>')
-def rename_key(param):
-    # copiat manual
-    base_key, sub_key, name = get_key_value(param)
-    return json.dumps('[RENAME_KEY]: Success')
-
-    # try:
-    #     handle = winreg.OpenKey(base_key, sub_key)
-    #     try:
-    #         os.remove('abc')
-    #     except OSError:
-    #         print('nimic')
-    #     winreg.SaveKey(handle, 'abc')
-    #     # try:
-    #     #     delete_sub_key(handle)
-    #     # except OSError:
-    #     #     print('nimic')
-    #     handle.Close()
-    #     if sub_key.__contains__('\\'):
-    #         sub_key = sub_key[0:sub_key.rfind('\\')]
-    #     else:
-    #         sub_key = ''
-    #     handle = winreg.ConnectRegistry(None, base_key)
-    #     winreg.LoadKey(handle, name, 'abc')
-    #     os.remove('abc')
-    # except OSError as e:
-    #     return json.dumps(str(e))
+# @app.route('/rename_key/<path:param>')
+# def rename_key(param):
+#     base_key, sub_key, name = get_key_value(param)
+#     try:
+#         sub_key = sub_key[0: sub_key.rfind('\\')]
+#         handle = win32api.RegOpenKey(win32con.HKEY_CURRENT_CONFIG, sub_key, 0, win32con.KEY_ALL_ACCESS)
+#         handle2 = win32api.RegCreateKey(win32con.HKEY_CURRENT_CONFIG, name)
+#         win32api.RegCopyTree(handle, None, handle2)
+#         win32api.RegCloseKey(handle)
+#     except OSError:
+#         return -1
+#     return 0
+#     return dumps('[RENAME_KEY]: Success')
 
 
 @app.route('/delete_key/<path:param>')
 def delete_key(param):
     base_key, sub_key = get_key(param)
     try:
-        handle = winreg.OpenKey(base_key, sub_key)
+        handle = win32api.RegOpenKeyEx(base_key, sub_key, 0, win32con.KEY_ALL_ACCESS)
         delete_sub_key(handle)
-        handle.Close()
+        win32api.RegCloseKey(handle)
+        win32api.RegDeleteKey(base_key, sub_key)
     except OSError as e:
-        return json.dumps(f'[DELETE_KEY]: {str(e)}')
-    return json.dumps('[DELETE_KEY]: Success')
+        return dumps(f'[DELETE_KEY]: {str(e)}')
+    return dumps('[DELETE_KEY]: Success')
 
 
 def delete_sub_key(handle):
-    while True:
-        try:
-            sub_key = winreg.EnumKey(handle, 0)
-            sub_handle = winreg.OpenKey(handle, sub_key)
-            delete_sub_key(sub_handle)
-            sub_handle.Close()
-        except OSError:
-            break
     try:
-        winreg.DeleteKey(handle, "")
-    except OSError as e:
-        return json.dumps([f'DELETE_SUB_KEY]: {str(e)}'])
+        count = key_count(handle)
+        for i in range(count):
+            sub_key = win32api.RegEnumKey(handle, 0)
+            sub_handle = win32api.RegOpenKeyEx(handle, sub_key, 0, win32con.KEY_ALL_ACCESS)
+            delete_sub_key(sub_handle)
+            win32api.RegCloseKey(sub_handle)
+            win32api.RegDeleteKey(handle, sub_key)
+    except OSError:
+        return
 
 
 @app.route('/delete_value/<path:param>')
 def delete_value(param):
     base_key, sub_key, value = get_key_value(param)
     try:
-        handle = winreg.OpenKey(base_key, sub_key, access=winreg.KEY_SET_VALUE)
-        winreg.DeleteValue(handle, value)
-        handle.Close()
+        handle = win32api.RegOpenKeyEx(base_key, sub_key, 0, win32con.KEY_SET_VALUE)
+        win32api.RegDeleteValue(handle, value)
+        win32api.RegCloseKey(handle)
     except OSError as e:
-        return json.dumps(f'[DELETE_VALUE]: {str(e)}')
-    return json.dumps('[DELETE_VALUE]: Success')
+        return dumps(f'[DELETE_VALUE]: {str(e)}')
+    return dumps('[DELETE_VALUE]: Success')
 
 
 @app.route('/inspect_key/<path:param>')
@@ -242,22 +217,22 @@ def inspect_key(param):
     result = []
     found_default = False
     try:
-        handle = winreg.OpenKey(base_key, sub_key)
-        length = winreg.QueryInfoKey(handle)[1]
+        handle = win32api.RegOpenKeyEx(base_key, sub_key)
+        length = key_count(handle, check=1)
         for i in range(length):
-            value = list(winreg.EnumValue(handle, i))
+            value = list(win32api.RegEnumValue(handle, i))
             if value[0] == '':
                 found_default = True
                 result = [['(default)', value[1], 'REG_SZ']] + result
             else:
                 value[2] = value_types[value[2]]
                 result.append(list(value))
-        handle.Close()
+        win32api.RegCloseKey(handle)
         if not found_default:
             result = [['(default)', '(value not set)', 'REG_SZ']] + result
     except OSError as e:
-        return json.dumps(f'[INSPECT_KEY]: {str(e)}')
-    return json.dumps(result)
+        return dumps(f'[INSPECT_KEY]: {str(e)}')
+    return dumps(result)
 
 
 @app.route('/expand_key/<path:param>')
@@ -265,18 +240,18 @@ def expand_key(param):
     base_key, sub_key = get_key(param)
     result = []
     try:
-        handle = winreg.OpenKey(base_key, sub_key)
-        length = winreg.QueryInfoKey(handle)[0]
+        handle = win32api.RegOpenKeyEx(base_key, sub_key)
+        length = key_count(handle)
         for i in range(length):
-            sub_sub_key = winreg.EnumKey(handle, i)
-            temp_handle = winreg.OpenKey(handle, sub_sub_key)
-            has_sub_keys = str(winreg.QueryInfoKey(temp_handle)[0])
-            temp_handle.Close()
+            sub_sub_key = win32api.RegEnumKey(handle, i)
+            temp_handle = win32api.RegOpenKeyEx(handle, sub_sub_key, sam=win32con.KEY_QUERY_VALUE)
+            has_sub_keys = str(win32api.RegQueryInfoKey(temp_handle)[0])
+            win32api.RegCloseKey(temp_handle)
             result.append([has_sub_keys, sub_sub_key])
-        handle.Close()
+        win32api.RegCloseKey(handle)
     except OSError as e:
-        return json.dumps(f'[EXPAND_KEY]: {str(e)}')
-    return json.dumps(result)
+        return dumps(f'[EXPAND_KEY]: {str(e)}')
+    return dumps(result)
 
 
 @app.route('/')
@@ -284,15 +259,5 @@ def root():
     return render_template('index.html')
 
 
-# def enable_privilege(privilege):
-#     token = win32security.OpenProcessToken(win32api.GetCurrentProcess(),
-#                                            win32security.TOKEN_ADJUST_PRIVILEGES | win32security.TOKEN_QUERY)
-#     win32security.AdjustTokenPrivileges(token, 0, [(win32security.LookupPrivilegeValue(None, privilege),
-#                                                     win32security.SE_PRIVILEGE_ENABLED)])
-#     win32api.CloseHandle(token)
-
-
 if __name__ == '__main__':
-    # enable_privilege('SeBackupPrivilege')
-    # enable_privilege('SeRestorePrivilege')
     app.run(port=80, debug=True)
