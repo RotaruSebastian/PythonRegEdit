@@ -33,7 +33,6 @@ $('tbody').on('click', 'tr', function() {
     let key_name = document.getElementById('key_name');
     key_name.dataset.value = this.id;
     key_name.dataset.type = this.dataset.type;
-    console.log(key_name.dataset.type);
     $(this)
         .toggleClass('selected')
         .siblings('.selected')
@@ -70,6 +69,7 @@ function list_values(values) {
         const tr = document.createElement('tr');
         tr.id = values[value][0];
         tr.dataset.type = values[value][2];
+        tr.className = 'table_row';
         const td0 = document.createElement('td');
         td0.textContent = values[value][0];
         const td1 = document.createElement('td');
@@ -85,9 +85,7 @@ function list_values(values) {
 function new_key() {
     let id = document.getElementById('key_name');
     id = id.dataset.name;
-    console.log('create_key: ', id);
     $.getJSON('/create_key/' + encodeURIComponent(id), function (result) {
-        console.log(result);
         if(id.slice(-1) !== '\\') {
             id += '\\';
         }
@@ -99,43 +97,43 @@ function new_value() {
     let id = document.getElementById('key_name').dataset.name;
     let param = id + '\\\\value\\\\' + type;
     if(0 <= type && type <= 3) {
-        $.getJSON('/create_value/' + encodeURIComponent(param), function (result) {
-            update_branch(id + '\\', false);
+        $.getJSON('/create_value/' + encodeURIComponent(param), function () {
+            // update_branch(id + '\\', false);
             select_key(id);
         });
     } else {
         window.alert('Invalid type');
     }
 }
-function rename_key() {
-    let id = document.getElementById('key_name').dataset.name;
-    if(id.length < 3) {
-        window.alert('Can not rename base key');
-        return;
-    }
-    let base_name = id.split('\\');
-    base_name.pop();
-    base_name = base_name.join('\\');
-    let new_name = prompt('New name');
-    if(new_name.includes('\\') || !new_name) {
-        return;
-    }
-    let check_name = base_name + '\\' + new_name;
-    if(valid_name(check_name)) {
-        check_name = id + '\\\\value\\\\' + new_name;
-        // $.getJSON('/rename_key/' + encodeURIComponent(check_name), function (result) {
-        //     console.log(result);
-        //     update_branch(base_name + '\\', false);
-        //     select_key(id);
-        // });
-    } else {
-        window.alert('Key name not valid')
-    }
-}
+// function rename_key() {
+//     let id = document.getElementById('key_name').dataset.name;
+//     if(id.length < 3) {
+//         window.alert('Can not rename base key');
+//         return;
+//     }
+//     let base_name = id.split('\\');
+//     base_name.pop();
+//     base_name = base_name.join('\\');
+//     let new_name = prompt('New name');
+//     if(new_name.includes('\\') || !new_name) {
+//         return;
+//     }
+//     let check_name = base_name + '\\' + new_name;
+//     if(valid_key_name(check_name)) {
+//         check_name = id + '\\\\value\\\\' + new_name;
+//         // $.getJSON('/rename_key/' + encodeURIComponent(check_name), function (result) {
+//         //     console.log(result);
+//         //     update_branch(base_name + '\\', false);
+//         //     select_key(id);
+//         // });
+//     } else {
+//         window.alert('Key name not valid')
+//     }
+// }
 function delete_key() {
     let id = document.getElementById('key_name').dataset.name;
     if(id.length > 2) {
-        $.getJSON('/delete_key/' + encodeURIComponent(id), function (result) {
+        $.getJSON('/delete_key/' + encodeURIComponent(id), function () {
             id = id.slice(0, id.lastIndexOf('\\'));
             update_branch(id + '\\', false);
             select_key(id);
@@ -148,7 +146,21 @@ function find_string() {
 
 }
 function rename_value() {
-    // chestii prompt
+    let key_name = document.getElementById('key_name');
+    let id = key_name.dataset.name;
+    let new_name = prompt('Enter value name')
+    if(!new_name) {
+        return;
+    }
+    if(valid_value_name(new_name)) {
+        let param = id + '\\\\value\\\\' + key_name.dataset.value + '\\\\data\\\\' + new_name;
+        $.getJSON('/rename_value/' + encodeURIComponent(param), function () {
+            // update_branch(id + '\\', false);
+            select_key(id);
+        });
+    } else {
+        window.alert('Invalid name, cannot have more values with the same name')
+    }
 }
 function edit_value() {
     let key_name = document.getElementById('key_name');
@@ -159,11 +171,10 @@ function edit_value() {
     } else {
         new_value = prompt('Enter new value');
     }
-    if(valid_value(key_name.dataset.type, new_value)) {
+    if(valid_value_content(key_name.dataset.type, new_value)) {
         let param = id + '\\\\value\\\\' + key_name.dataset.value + '\\\\data\\\\' + new_value;
-        console.log(param);
-        $.getJSON('/edit_value/' + encodeURIComponent(param), function (result) {
-            update_branch(id + '\\', false);
+        $.getJSON('/edit_value/' + encodeURIComponent(param), function () {
+            // update_branch(id + '\\', false);
             select_key(id);
         });
     } else {
@@ -175,11 +186,33 @@ function delete_value() {
     let id = key_name.dataset.name;
     let value = key_name.dataset.value;
     let string = id + '\\\\value\\\\' + value;
-    $.getJSON('/delete_value/' + encodeURIComponent(string), function (result) {
+    $.getJSON('/delete_value/' + encodeURIComponent(string), function () {
         update_table();
     });
 }
-function valid_value(type, new_value) {
+function valid_key_name(name) {
+    let parent_name = name.split('\\');
+    parent_name.pop();
+    parent_name = parent_name.join('\\') + '\\';
+    let children = document.getElementById(parent_name + '\\sub').querySelectorAll('.child');
+    name += '\\';
+    for(let child in children) {
+        if(children[child].id === name) {
+            return false;
+        }
+    }
+    return true;
+}
+function valid_value_name(new_value) {
+    let rows = Array.from(document.getElementById('selected_key').querySelectorAll('.table_row'));
+    for(let row in rows) {
+        if(new_value === rows[row].id) {
+            return false;
+        }
+    }
+    return true;
+}
+function valid_value_content(type, new_value) {
     if(type === 'REG_DWORD') {
         return new_value >= 0 && new_value <= 4294967295;
     }
@@ -199,7 +232,6 @@ function update_table() {
 }
 function update_branch(id, new_value) {
     let checkbox = document.getElementById(id);
-    console.log(id);
     if(new_value) {
         checkbox.style.visibility = 'visible';
     }
@@ -207,19 +239,6 @@ function update_branch(id, new_value) {
         remove_branch(id);
         expand_branch(id);
     }
-}
-function valid_name(name) {
-    let parent_name = name.split('\\');
-    parent_name.pop();
-    parent_name = parent_name.join('\\') + '\\';
-    let children = document.getElementById(parent_name + '\\sub').querySelectorAll('.child');
-    name += '\\';
-    for(let child in children) {
-        if(children[child].id === name) {
-            return false;
-        }
-    }
-    return true;
 }
 // Sidenav checkbox functions
 function computer() {
