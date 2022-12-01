@@ -32,6 +32,8 @@ document.addEventListener('mouseup', function() {
 $('tbody').on('click', 'tr', function() {
     let key_name = document.getElementById('key_name');
     key_name.dataset.value = this.id;
+    key_name.dataset.type = this.dataset.type;
+    console.log(key_name.dataset.type);
     $(this)
         .toggleClass('selected')
         .siblings('.selected')
@@ -67,6 +69,7 @@ function list_values(values) {
     for(let value in values) {
         const tr = document.createElement('tr');
         tr.id = values[value][0];
+        tr.dataset.type = values[value][2];
         const td0 = document.createElement('td');
         td0.textContent = values[value][0];
         const td1 = document.createElement('td');
@@ -82,23 +85,59 @@ function list_values(values) {
 function new_key() {
     let id = document.getElementById('key_name');
     id = id.dataset.name;
-    $.getJSON('/create_key/' + encodeURIComponent(id), function () {
-        update_branch(id + '\\');
+    console.log('create_key: ', id);
+    $.getJSON('/create_key/' + encodeURIComponent(id), function (result) {
+        console.log(result);
+        if(id.slice(-1) !== '\\') {
+            id += '\\';
+        }
+        update_branch(id, true);
     });
 }
 function new_value() {
-    // chestii prompt
+    let type = prompt('Enter value type (0 -> REG_SZ, 1 -> REG_MULTI_SZ, 2 -> REG_EXPAND, 3 -> REG_DWORD');
+    let id = document.getElementById('key_name').dataset.name;
+    let param = id + '\\\\value\\\\' + type;
+    if(0 <= type && type <= 3) {
+        $.getJSON('/create_value/' + encodeURIComponent(param), function (result) {
+            update_branch(id + '\\', false);
+            select_key(id);
+        });
+    } else {
+        window.alert('Invalid type');
+    }
 }
 function rename_key() {
-    // savekey + loadkey
+    let id = document.getElementById('key_name').dataset.name;
+    if(id.length < 3) {
+        window.alert('Can not rename base key');
+        return;
+    }
+    let base_name = id.split('\\');
+    base_name.pop();
+    base_name = base_name.join('\\');
+    let new_name = prompt('New name');
+    if(new_name.includes('\\') || !new_name) {
+        return;
+    }
+    let check_name = base_name + '\\' + new_name;
+    if(valid_name(check_name)) {
+        check_name = id + '\\\\value\\\\' + new_name;
+        // $.getJSON('/rename_key/' + encodeURIComponent(check_name), function (result) {
+        //     console.log(result);
+        //     update_branch(base_name + '\\', false);
+        //     select_key(id);
+        // });
+    } else {
+        window.alert('Key name not valid')
+    }
 }
 function delete_key() {
-    let id = document.getElementById('key_name');
-    id = id.dataset.name;
+    let id = document.getElementById('key_name').dataset.name;
     if(id.length > 2) {
-        $.getJSON('/delete_key/' + encodeURIComponent(id), function () {
+        $.getJSON('/delete_key/' + encodeURIComponent(id), function (result) {
             id = id.slice(0, id.lastIndexOf('\\'));
-            update_branch(id + '\\');
+            update_branch(id + '\\', false);
             select_key(id);
         });
     } else {
@@ -113,17 +152,32 @@ function rename_value() {
 }
 function edit_value() {
     // chestii prompt
+    let key_name = document.getElementById('key_name');
+    let new_value = prompt('Enter new value');
+    if(valid_value(key_name.dataset.type, new_value)) {
+        let param = key_name.id + '\\' + key_name.dataset.value + '\\' + new_value;
+        $.getJSON('/edit_value/' + encodeURIComponent(id), function (result) {
+            id = id.slice(0, id.lastIndexOf('\\'));
+            update_branch(id + '\\', false);
+            select_key(id);
+        });
+    } else {
+        window.alert('Invalid value');
+    }
+    // key_name.dataset.value = this.id;
+    // key_name.dataset.type = this.dataset.type;
 }
 function delete_value() {
     let key_name = document.getElementById('key_name');
     let id = key_name.dataset.name;
     let value = key_name.dataset.value;
     let string = id + '\\\\value\\\\' + value;
-    console.log(string);
     $.getJSON('/delete_value/' + encodeURIComponent(string), function (result) {
-        console.log(result);
         update_table();
     });
+}
+function valid_value(type, new_value) {
+    return false;
 }
 function update_table() {
     let value = document.getElementById('key_name').dataset.value
@@ -137,13 +191,29 @@ function update_table() {
     let key_name = document.getElementById('key_name');
     key_name.dataset.value = '(default)';
 }
-function update_branch(id) {
+function update_branch(id, new_value) {
     let checkbox = document.getElementById(id);
-    checkbox.style.visibility = 'visible';
+    console.log(id);
+    if(new_value) {
+        checkbox.style.visibility = 'visible';
+    }
     if(checkbox.checked === true) {
         remove_branch(id);
         expand_branch(id);
     }
+}
+function valid_name(name) {
+    let parent_name = name.split('\\');
+    parent_name.pop();
+    parent_name = parent_name.join('\\') + '\\';
+    let children = document.getElementById(parent_name + '\\sub').querySelectorAll('.child');
+    name += '\\';
+    for(let child in children) {
+        if(children[child].id === name) {
+            return false;
+        }
+    }
+    return true;
 }
 // Sidenav checkbox functions
 function computer() {
@@ -185,6 +255,7 @@ function update_tree(id, sub_key) {
     let input = document.createElement('input');
     input.type = 'checkbox';
     input.id = id + sub_key[1] + '\\';
+    input.className = 'child';
     if(sub_key[0] === '0') {
         input.style.visibility = 'hidden';
     }
