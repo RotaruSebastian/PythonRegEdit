@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>test &mdash; PythonRegEdit  documentation</title>
+      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="../_static/doctools.js"></script>
+        <script src="../_static/sphinx_highlight.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../index.html" class="icon icon-home"> PythonRegEdit
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../modules.html">Python_Regedit</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">PythonRegEdit</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home"></a></li>
+          <li class="breadcrumb-item"><a href="index.html">Module code</a></li>
+      <li class="breadcrumb-item active">test</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for test</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">json</span> <span class="kn">import</span> <span class="n">dumps</span>
+<span class="kn">import</span> <span class="nn">unittest</span>
+<span class="kn">import</span> <span class="nn">winreg</span>
+<span class="kn">import</span> <span class="nn">app</span>
+
+
+<div class="viewcode-block" id="string_key_count"><a class="viewcode-back" href="../test.html#test.string_key_count">[docs]</a><span class="k">def</span> <span class="nf">string_key_count</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">check</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Auxiliary function, gets the path to a registry key and returns its number of sub-keys or values.</span>
+
+<span class="sd">    :param path: url containing path to a registry key, must be decoded using `app.get_key_subkey`</span>
+<span class="sd">    :type path: str</span>
+<span class="sd">    :param check: if 0, function returns the number of sub-keys, if 1 function returns the number of values</span>
+<span class="sd">    :type check: int</span>
+<span class="sd">    :return: number of sub-keys or values</span>
+<span class="sd">    :rtype: int</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">base_key</span><span class="p">,</span> <span class="n">sub_key</span> <span class="o">=</span> <span class="n">app</span><span class="o">.</span><span class="n">get_key_subkey</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">handle</span> <span class="o">=</span> <span class="n">winreg</span><span class="o">.</span><span class="n">OpenKey</span><span class="p">(</span><span class="n">base_key</span><span class="p">,</span> <span class="n">sub_key</span><span class="p">)</span>
+        <span class="n">count</span> <span class="o">=</span> <span class="n">winreg</span><span class="o">.</span><span class="n">QueryInfoKey</span><span class="p">(</span><span class="n">handle</span><span class="p">)[</span><span class="n">check</span><span class="p">]</span>
+        <span class="n">handle</span><span class="o">.</span><span class="n">Close</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">count</span>
+    <span class="k">except</span> <span class="ne">OSError</span><span class="p">:</span>
+        <span class="k">return</span> <span class="o">-</span><span class="mi">1</span></div>
+
+
+<div class="viewcode-block" id="get_value_from_key"><a class="viewcode-back" href="../test.html#test.get_value_from_key">[docs]</a><span class="k">def</span> <span class="nf">get_value_from_key</span><span class="p">(</span><span class="n">path</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Auxiliary function, gets the path to a registry key and the name of a value, returns the data inside that value.</span>
+
+<span class="sd">    :param path: url containing path to a key and the name of a value, must be decoded using `app.get_key_subkey_param1`</span>
+<span class="sd">    :type path: str</span>
+<span class="sd">    :return: data from the given value</span>
+<span class="sd">    :rtype: str</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">base_key</span><span class="p">,</span> <span class="n">sub_key</span><span class="p">,</span> <span class="n">value</span> <span class="o">=</span> <span class="n">app</span><span class="o">.</span><span class="n">get_key_subkey_param1</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">handle</span> <span class="o">=</span> <span class="n">winreg</span><span class="o">.</span><span class="n">OpenKey</span><span class="p">(</span><span class="n">base_key</span><span class="p">,</span> <span class="n">sub_key</span><span class="p">,</span> <span class="n">access</span><span class="o">=</span><span class="n">winreg</span><span class="o">.</span><span class="n">KEY_QUERY_VALUE</span><span class="p">)</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">winreg</span><span class="o">.</span><span class="n">QueryValueEx</span><span class="p">(</span><span class="n">handle</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
+        <span class="n">handle</span><span class="o">.</span><span class="n">Close</span><span class="p">()</span>
+        <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+    <span class="k">except</span> <span class="ne">OSError</span><span class="p">:</span>
+        <span class="k">return</span> <span class="s1">&#39;err&#39;</span></div>
+
+
+<div class="viewcode-block" id="Test"><a class="viewcode-back" href="../test.html#test.Test">[docs]</a><span class="k">class</span> <span class="nc">Test</span><span class="p">(</span><span class="n">unittest</span><span class="o">.</span><span class="n">TestCase</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Unit testing class for most of the functions from the app module&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="Test.test_get_key"><a class="viewcode-back" href="../test.html#test.Test.test_get_key">[docs]</a>    <span class="k">def</span> <span class="nf">test_get_key</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">key_tuple</span> <span class="o">=</span> <span class="n">app</span><span class="o">.</span><span class="n">get_key_subkey</span><span class="p">(</span><span class="s1">&#39;4</span><span class="se">\\</span><span class="s1">&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">key_tuple</span><span class="p">,</span> <span class="p">(</span><span class="n">winreg</span><span class="o">.</span><span class="n">HKEY_CURRENT_CONFIG</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">))</span>
+        <span class="n">key_tuple</span> <span class="o">=</span> <span class="n">app</span><span class="o">.</span><span class="n">get_key_subkey</span><span class="p">(</span><span class="s1">&#39;4</span><span class="se">\\</span><span class="s1">New Key #1</span><span class="se">\\</span><span class="s1">New Key #2&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">key_tuple</span><span class="p">,</span> <span class="p">(</span><span class="n">winreg</span><span class="o">.</span><span class="n">HKEY_CURRENT_CONFIG</span><span class="p">,</span> <span class="s1">&#39;New Key #1</span><span class="se">\\</span><span class="s1">New Key #2&#39;</span><span class="p">))</span></div>
+
+<div class="viewcode-block" id="Test.test_get_key_value"><a class="viewcode-back" href="../test.html#test.Test.test_get_key_value">[docs]</a>    <span class="k">def</span> <span class="nf">test_get_key_value</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">key_tuple</span> <span class="o">=</span> <span class="n">app</span><span class="o">.</span><span class="n">get_key_subkey_param1</span><span class="p">(</span><span class="s1">&#39;4</span><span class="se">\\</span><span class="s1">New Key #1</span><span class="se">\\</span><span class="s1">New Key #2</span><span class="se">\\</span><span class="s1">New Key #1</span><span class="se">\\\\</span><span class="s1">param1</span><span class="se">\\\\</span><span class="s1">mod&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">key_tuple</span><span class="p">,</span> <span class="p">(</span><span class="n">winreg</span><span class="o">.</span><span class="n">HKEY_CURRENT_CONFIG</span><span class="p">,</span> <span class="s1">&#39;New Key #1</span><span class="se">\\</span><span class="s1">New Key #2</span><span class="se">\\</span><span class="s1">New Key #1&#39;</span><span class="p">,</span> <span class="s1">&#39;mod&#39;</span><span class="p">))</span></div>
+
+<div class="viewcode-block" id="Test.test_get_key_value_data"><a class="viewcode-back" href="../test.html#test.Test.test_get_key_value_data">[docs]</a>    <span class="k">def</span> <span class="nf">test_get_key_value_data</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">key_tuple</span> <span class="o">=</span> <span class="n">app</span><span class="o">.</span><span class="n">get_key_subkey_param1_param2</span><span class="p">(</span><span class="s1">&#39;4</span><span class="se">\\</span><span class="s1">New Key #1</span><span class="se">\\</span><span class="s1">New Key #2</span><span class="se">\\\\</span><span class="s1">param1</span><span class="se">\\\\</span><span class="s1">New Value &#39;</span>
+                                                     <span class="s1">&#39;#1</span><span class="se">\\\\</span><span class="s1">param2</span><span class="se">\\\\</span><span class="s1">3&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">key_tuple</span><span class="p">,</span> <span class="p">(</span><span class="n">winreg</span><span class="o">.</span><span class="n">HKEY_CURRENT_CONFIG</span><span class="p">,</span> <span class="s1">&#39;New Key #1</span><span class="se">\\</span><span class="s1">New Key #2&#39;</span><span class="p">,</span> <span class="s1">&#39;New Value #1&#39;</span><span class="p">,</span> <span class="s1">&#39;3&#39;</span><span class="p">))</span></div>
+
+<div class="viewcode-block" id="Test.test_create_key"><a class="viewcode-back" href="../test.html#test.Test.test_create_key">[docs]</a>    <span class="k">def</span> <span class="nf">test_create_key</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">initial_count</span> <span class="o">=</span> <span class="n">string_key_count</span><span class="p">(</span><span class="s1">&#39;4</span><span class="se">\\</span><span class="s1">New Key #1</span><span class="se">\\</span><span class="s1">New Key #2&#39;</span><span class="p">)</span>
+        <span class="n">app</span><span class="o">.</span><span class="n">create_key</span><span class="p">(</span><span class="s1">&#39;4</span><span class="se">\\</span><span class="s1">New Key #1</span><span class="se">\\</span><span class="s1">New Key #2&#39;</span><span class="p">)</span>
+        <span class="n">final_count</span> <span class="o">=</span> <span class="n">string_key_count</span><span class="p">(</span><span class="s1">&#39;4</span><span class="se">\\</span><span class="s1">New Key #1</span><span class="se">\\</span><span class="s1">New Key #2&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertGreater</span><span class="p">(</span><span class="n">final_count</span><span class="p">,</span> <span class="n">initial_count</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Test.test_create_value"><a class="viewcode-back" href="../test.html#test.Test.test_create_value">[docs]</a>    <span class="k">def</span> <span class="nf">test_create_value</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">initial_count</span> <span class="o">=</span> <span class="n">string_key_count</span><span class="p">(</span><span class="s1">&#39;4</span><span class="se">\\</span><span class="s1">New Key #1</span><span class="se">\\</span><span class="s1">New Key #2&#39;</span><span class="p">,</span> <span class="n">check</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">app</span><span class="o">.</span><span class="n">create_value</span><span class="p">(</span><span class="s1">&#39;4</span><span class="se">\\</span><span class="s1">New Key #1</span><span class="se">\\</span><span class="s1">New Key #2</span><span class="se">\\</span><span class="s1">New Key #1</span><span class="se">\\\\</span><span class="s1">param1</span><span class="se">\\\\</span><span class="s1">3&#39;</span><span class="p">)</span>
+        <span class="n">app</span><span class="o">.</span><span class="n">create_value</span><span class="p">(</span><span class="s1">&#39;4</span><span class="se">\\</span><span class="s1">New Key #1</span><span class="se">\\</span><span class="s1">New Key #2</span><span class="se">\\</span><span class="s1">New Key #1</span><span class="se">\\\\</span><span class="s1">param1</span><span class="se">\\\\</span><span class="s1">3&#39;</span><span class="p">)</span>
+        <span class="n">app</span><span class="o">.</span><span class="n">create_value</span><span class="p">(</span><span class="s1">&#39;4</span><span class="se">\\</span><span class="s1">New Key #1</span><span class="se">\\</span><span class="s1">New Key #2</span><span class="se">\\</span><span class="s1">New Key #1</span><span class="se">\\\\</span><span class="s1">param1</span><span class="se">\\\\</span><span class="s1">3&#39;</span><span class="p">)</span>
+        <span class="n">final_count</span> <span class="o">=</span> <span class="n">string_key_count</span><span class="p">(</span><span class="s1">&#39;4</span><span class="se">\\</span><span class="s1">New Key #1</span><span class="se">\\</span><span class="s1">New Key #2</span><span class="se">\\</span><span class="s1">New Key #1&#39;</span><span class="p">,</span> <span class="n">check</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertGreater</span><span class="p">(</span><span class="n">final_count</span><span class="p">,</span> <span class="n">initial_count</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Test.test_edit_value"><a class="viewcode-back" href="../test.html#test.Test.test_edit_value">[docs]</a>    <span class="k">def</span> <span class="nf">test_edit_value</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">app</span><span class="o">.</span><span class="n">edit_value</span><span class="p">(</span><span class="s1">&#39;4</span><span class="se">\\</span><span class="s1">New Key #1</span><span class="se">\\</span><span class="s1">New Key #2</span><span class="se">\\</span><span class="s1">New Key #1</span><span class="se">\\\\</span><span class="s1">param1</span><span class="se">\\\\</span><span class="s1">New Value #1</span><span class="se">\\\\</span><span class="s1">param2</span><span class="se">\\\\</span><span class="s1">1&#39;</span><span class="p">)</span>
+        <span class="n">value</span> <span class="o">=</span> <span class="n">get_value_from_key</span><span class="p">(</span><span class="s1">&#39;4</span><span class="se">\\</span><span class="s1">New Key #1</span><span class="se">\\</span><span class="s1">New Key #2</span><span class="se">\\</span><span class="s1">New Key #1</span><span class="se">\\\\</span><span class="s1">param1</span><span class="se">\\\\</span><span class="s1">New Value #1&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="s1">&#39;1&#39;</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
+        <span class="n">app</span><span class="o">.</span><span class="n">edit_value</span><span class="p">(</span><span class="s1">&#39;4</span><span class="se">\\</span><span class="s1">New Key #1</span><span class="se">\\</span><span class="s1">New Key #2</span><span class="se">\\</span><span class="s1">New Key #1</span><span class="se">\\\\</span><span class="s1">param1</span><span class="se">\\\\</span><span class="s1">New Value #1</span><span class="se">\\\\</span><span class="s1">param2</span><span class="se">\\\\</span><span class="s1">0&#39;</span><span class="p">)</span>
+        <span class="n">value</span> <span class="o">=</span> <span class="n">get_value_from_key</span><span class="p">(</span><span class="s1">&#39;4</span><span class="se">\\</span><span class="s1">New Key #1</span><span class="se">\\</span><span class="s1">New Key #2</span><span class="se">\\</span><span class="s1">New Key #1</span><span class="se">\\\\</span><span class="s1">param1</span><span class="se">\\\\</span><span class="s1">New Value #1&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="s1">&#39;0&#39;</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Test.test_rename_value"><a class="viewcode-back" href="../test.html#test.Test.test_rename_value">[docs]</a>    <span class="k">def</span> <span class="nf">test_rename_value</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">value</span> <span class="o">=</span> <span class="n">get_value_from_key</span><span class="p">(</span><span class="s1">&#39;4</span><span class="se">\\</span><span class="s1">New Key #1</span><span class="se">\\</span><span class="s1">New Key #2</span><span class="se">\\</span><span class="s1">New Key #1</span><span class="se">\\\\</span><span class="s1">param1</span><span class="se">\\\\</span><span class="s1">New Value #5&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="s1">&#39;0&#39;</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
+        <span class="n">app</span><span class="o">.</span><span class="n">rename_value</span><span class="p">(</span><span class="s1">&#39;4</span><span class="se">\\</span><span class="s1">New Key #1</span><span class="se">\\</span><span class="s1">New Key #2</span><span class="se">\\</span><span class="s1">New Key #1</span><span class="se">\\\\</span><span class="s1">param1</span><span class="se">\\\\</span><span class="s1">New Value #5</span><span class="se">\\\\</span><span class="s1">param2</span><span class="se">\\\\</span><span class="s1">mod&#39;</span><span class="p">)</span>
+        <span class="n">value</span> <span class="o">=</span> <span class="n">get_value_from_key</span><span class="p">(</span><span class="s1">&#39;4</span><span class="se">\\</span><span class="s1">New Key #1</span><span class="se">\\</span><span class="s1">New Key #2</span><span class="se">\\</span><span class="s1">New Key #1</span><span class="se">\\\\</span><span class="s1">param1</span><span class="se">\\\\</span><span class="s1">New Value #5&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="s1">&#39;err&#39;</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
+        <span class="n">value</span> <span class="o">=</span> <span class="n">get_value_from_key</span><span class="p">(</span><span class="s1">&#39;4</span><span class="se">\\</span><span class="s1">New Key #1</span><span class="se">\\</span><span class="s1">New Key #2</span><span class="se">\\</span><span class="s1">New Key #1</span><span class="se">\\\\</span><span class="s1">param1</span><span class="se">\\\\</span><span class="s1">mod&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="s1">&#39;0&#39;</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
+        <span class="n">app</span><span class="o">.</span><span class="n">rename_value</span><span class="p">(</span><span class="s1">&#39;4</span><span class="se">\\</span><span class="s1">New Key #1</span><span class="se">\\</span><span class="s1">New Key #2</span><span class="se">\\</span><span class="s1">New Key #1</span><span class="se">\\\\</span><span class="s1">param1</span><span class="se">\\\\</span><span class="s1">mod</span><span class="se">\\\\</span><span class="s1">param2</span><span class="se">\\\\</span><span class="s1">New Value #5&#39;</span><span class="p">)</span>
+        <span class="n">value</span> <span class="o">=</span> <span class="n">get_value_from_key</span><span class="p">(</span><span class="s1">&#39;4</span><span class="se">\\</span><span class="s1">New Key #1</span><span class="se">\\</span><span class="s1">New Key #2</span><span class="se">\\</span><span class="s1">New Key #1</span><span class="se">\\\\</span><span class="s1">param1</span><span class="se">\\\\</span><span class="s1">New Value #5&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="s1">&#39;0&#39;</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Test.test_delete_value"><a class="viewcode-back" href="../test.html#test.Test.test_delete_value">[docs]</a>    <span class="k">def</span> <span class="nf">test_delete_value</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">initial_count</span> <span class="o">=</span> <span class="n">string_key_count</span><span class="p">(</span><span class="s1">&#39;4</span><span class="se">\\</span><span class="s1">New Key #1</span><span class="se">\\</span><span class="s1">New Key #2&#39;</span><span class="p">,</span> <span class="n">check</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">app</span><span class="o">.</span><span class="n">delete_value</span><span class="p">(</span><span class="s1">&#39;4</span><span class="se">\\</span><span class="s1">New Key #1</span><span class="se">\\</span><span class="s1">New Key #2</span><span class="se">\\</span><span class="s1">New Key #1</span><span class="se">\\\\</span><span class="s1">param1</span><span class="se">\\\\</span><span class="s1">New Value #2&#39;</span><span class="p">)</span>
+        <span class="n">final_count</span> <span class="o">=</span> <span class="n">string_key_count</span><span class="p">(</span><span class="s1">&#39;4</span><span class="se">\\</span><span class="s1">New Key #1</span><span class="se">\\</span><span class="s1">New Key #2</span><span class="se">\\</span><span class="s1">New Key #1&#39;</span><span class="p">,</span> <span class="n">check</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertGreater</span><span class="p">(</span><span class="n">final_count</span><span class="p">,</span> <span class="n">initial_count</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Test.test_delete_key"><a class="viewcode-back" href="../test.html#test.Test.test_delete_key">[docs]</a>    <span class="k">def</span> <span class="nf">test_delete_key</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">initial_count</span> <span class="o">=</span> <span class="n">string_key_count</span><span class="p">(</span><span class="s1">&#39;4</span><span class="se">\\</span><span class="s1">New Key #1</span><span class="se">\\</span><span class="s1">New Key #2&#39;</span><span class="p">)</span>
+        <span class="n">app</span><span class="o">.</span><span class="n">delete_key</span><span class="p">(</span><span class="s1">&#39;4</span><span class="se">\\</span><span class="s1">New Key #1</span><span class="se">\\</span><span class="s1">New Key #2</span><span class="se">\\</span><span class="s1">New Key #2&#39;</span><span class="p">)</span>
+        <span class="n">final_count</span> <span class="o">=</span> <span class="n">string_key_count</span><span class="p">(</span><span class="s1">&#39;4</span><span class="se">\\</span><span class="s1">New Key #1</span><span class="se">\\</span><span class="s1">New Key #2&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertLess</span><span class="p">(</span><span class="n">final_count</span><span class="p">,</span> <span class="n">initial_count</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Test.test_rename_key"><a class="viewcode-back" href="../test.html#test.Test.test_rename_key">[docs]</a>    <span class="k">def</span> <span class="nf">test_rename_key</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">app</span><span class="o">.</span><span class="n">delete_key</span><span class="p">(</span><span class="s1">&#39;4</span><span class="se">\\</span><span class="s1">abc&#39;</span><span class="p">)</span>
+        <span class="n">app</span><span class="o">.</span><span class="n">create_key</span><span class="p">(</span><span class="s1">&#39;4</span><span class="se">\\</span><span class="s1">&#39;</span><span class="p">)</span>
+        <span class="n">app</span><span class="o">.</span><span class="n">create_value</span><span class="p">(</span><span class="s1">&#39;4</span><span class="se">\\</span><span class="s1">New Key #13</span><span class="se">\\\\</span><span class="s1">param1</span><span class="se">\\\\</span><span class="s1">3&#39;</span><span class="p">)</span>
+        <span class="n">app</span><span class="o">.</span><span class="n">edit_value</span><span class="p">(</span><span class="s1">&#39;4</span><span class="se">\\</span><span class="s1">New Key #13</span><span class="se">\\\\</span><span class="s1">param1</span><span class="se">\\\\</span><span class="s1">New Value #1</span><span class="se">\\\\</span><span class="s1">param2</span><span class="se">\\\\</span><span class="s1">15&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">app</span><span class="o">.</span><span class="n">rename_key</span><span class="p">(</span><span class="s1">&#39;4</span><span class="se">\\</span><span class="s1">New Key #13</span><span class="se">\\\\</span><span class="s1">param1</span><span class="se">\\\\</span><span class="s1">abc&#39;</span><span class="p">),</span> <span class="n">dumps</span><span class="p">(</span><span class="s1">&#39;[RENAME_KEY]: Success&#39;</span><span class="p">))</span>
+        <span class="n">val</span> <span class="o">=</span> <span class="n">get_value_from_key</span><span class="p">(</span><span class="s1">&#39;4</span><span class="se">\\</span><span class="s1">abc</span><span class="se">\\\\</span><span class="s1">param1</span><span class="se">\\\\</span><span class="s1">New Value #1&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">val</span><span class="p">,</span> <span class="s1">&#39;15&#39;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Test.test_search"><a class="viewcode-back" href="../test.html#test.Test.test_search">[docs]</a>    <span class="k">def</span> <span class="nf">test_search</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">rez</span> <span class="o">=</span> <span class="n">app</span><span class="o">.</span><span class="n">find_string</span><span class="p">(</span><span class="s1">&#39;4</span><span class="se">\\\\\\</span><span class="s1">param1</span><span class="se">\\\\\\\\</span><span class="s1">param2</span><span class="se">\\\\</span><span class="s1">abc&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">dumps</span><span class="p">(</span><span class="s1">&#39;4</span><span class="se">\\</span><span class="s1">abc</span><span class="se">\\\\</span><span class="s1">value</span><span class="se">\\\\</span><span class="s1">&#39;</span><span class="p">),</span> <span class="n">rez</span><span class="p">)</span>
+        <span class="c1"># valoare in cheia data ca parametru</span>
+        <span class="n">rez</span> <span class="o">=</span> <span class="n">app</span><span class="o">.</span><span class="n">find_string</span><span class="p">(</span><span class="s1">&#39;4</span><span class="se">\\</span><span class="s1">New Key #12</span><span class="se">\\</span><span class="s1">New Key #1</span><span class="se">\\\\</span><span class="s1">param1</span><span class="se">\\\\\\\\</span><span class="s1">param2</span><span class="se">\\\\</span><span class="s1">abc&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">dumps</span><span class="p">(</span><span class="s1">&#39;4</span><span class="se">\\</span><span class="s1">New Key #12</span><span class="se">\\</span><span class="s1">New Key #1</span><span class="se">\\</span><span class="s1">New Key #2</span><span class="se">\\\\</span><span class="s1">value</span><span class="se">\\\\</span><span class="s1">abc&#39;</span><span class="p">),</span> <span class="n">rez</span><span class="p">)</span>
+        <span class="c1"># valoare in alta cheie</span>
+        <span class="n">rez</span> <span class="o">=</span> <span class="n">app</span><span class="o">.</span><span class="n">find_string</span><span class="p">(</span><span class="s1">&#39;4</span><span class="se">\\</span><span class="s1">New Key #12</span><span class="se">\\</span><span class="s1">New Key #1</span><span class="se">\\</span><span class="s1">New Key #2</span><span class="se">\\</span><span class="s1">New Key #1</span><span class="se">\\\\</span><span class="s1">param1</span><span class="se">\\\\\\\\</span><span class="s1">param2</span><span class="se">\\\\</span><span class="s1">xyz&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">dumps</span><span class="p">(</span><span class="s1">&#39;4</span><span class="se">\\</span><span class="s1">New Key #7</span><span class="se">\\\\</span><span class="s1">value</span><span class="se">\\\\</span><span class="s1">xyz&#39;</span><span class="p">),</span> <span class="n">rez</span><span class="p">)</span>
+        <span class="c1"># valoare in alt registru</span>
+        <span class="n">rez</span> <span class="o">=</span> <span class="n">app</span><span class="o">.</span><span class="n">find_string</span><span class="p">(</span><span class="s1">&#39;3</span><span class="se">\\</span><span class="s1">S-1-5-21-299591297-3445868481-2478295680-1001_Classes</span><span class="se">\\\\</span><span class="s1">param1</span><span class="se">\\\\\\\\</span><span class="s1">param2</span><span class="se">\\\\</span><span class="s1">xyz&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">dumps</span><span class="p">(</span><span class="s1">&#39;4</span><span class="se">\\</span><span class="s1">New Key #7</span><span class="se">\\\\</span><span class="s1">value</span><span class="se">\\\\</span><span class="s1">xyz&#39;</span><span class="p">),</span> <span class="n">rez</span><span class="p">)</span>
+        <span class="c1"># valoare inexistenta</span>
+        <span class="n">rez</span> <span class="o">=</span> <span class="n">app</span><span class="o">.</span><span class="n">find_string</span><span class="p">(</span><span class="s1">&#39;3</span><span class="se">\\</span><span class="s1">S-1-5-21-299591297-3445868481-2478295680-1001_Classes</span><span class="se">\\\\</span><span class="s1">param1</span><span class="se">\\\\\\\\</span><span class="s1">param2&#39;</span>
+                              <span class="s1">&#39;</span><span class="se">\\\\</span><span class="s1">xyzawetawetwetewatewtwa&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">dumps</span><span class="p">(</span><span class="s1">&#39;&#39;</span><span class="p">),</span> <span class="n">rez</span><span class="p">)</span>
+        <span class="c1"># verificat daca ignora valorile din spate</span>
+        <span class="n">rez</span> <span class="o">=</span> <span class="n">app</span><span class="o">.</span><span class="n">find_string</span><span class="p">(</span><span class="s1">&#39;4</span><span class="se">\\</span><span class="s1">New Key #12</span><span class="se">\\</span><span class="s1">New Key #1</span><span class="se">\\</span><span class="s1">New Key #2</span><span class="se">\\\\</span><span class="s1">param1</span><span class="se">\\\\</span><span class="s1">omoratima</span><span class="se">\\\\</span><span class="s1">param2</span><span class="se">\\\\</span><span class="s1">abc&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">dumps</span><span class="p">(</span><span class="s1">&#39;4</span><span class="se">\\</span><span class="s1">New Key #12</span><span class="se">\\</span><span class="s1">New Key #1</span><span class="se">\\</span><span class="s1">New Key #2</span><span class="se">\\\\</span><span class="s1">value</span><span class="se">\\\\</span><span class="s1">valmax&#39;</span><span class="p">),</span> <span class="n">rez</span><span class="p">)</span></div></div>
+
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
+    <span class="n">unittest</span><span class="o">.</span><span class="n">main</span><span class="p">()</span>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, Rotaru Sebastian-Gabriel 3B4.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

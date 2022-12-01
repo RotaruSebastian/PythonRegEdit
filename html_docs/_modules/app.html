@@ -1,0 +1,608 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>app &mdash; PythonRegEdit  documentation</title>
+      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="../_static/doctools.js"></script>
+        <script src="../_static/sphinx_highlight.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../index.html" class="icon icon-home"> PythonRegEdit
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../modules.html">Python_Regedit</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">PythonRegEdit</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home"></a></li>
+          <li class="breadcrumb-item"><a href="index.html">Module code</a></li>
+      <li class="breadcrumb-item active">app</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for app</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">flask</span> <span class="kn">import</span> <span class="n">Flask</span><span class="p">,</span> <span class="n">render_template</span>
+<span class="kn">from</span> <span class="nn">urllib.parse</span> <span class="kn">import</span> <span class="n">unquote</span>
+<span class="kn">from</span> <span class="nn">json</span> <span class="kn">import</span> <span class="n">dumps</span>
+<span class="kn">from</span> <span class="nn">win32con</span> <span class="kn">import</span> <span class="n">HKEY_CLASSES_ROOT</span><span class="p">,</span> <span class="n">HKEY_CURRENT_USER</span><span class="p">,</span> <span class="n">HKEY_LOCAL_MACHINE</span><span class="p">,</span> <span class="n">HKEY_USERS</span><span class="p">,</span> <span class="n">HKEY_CURRENT_CONFIG</span>
+<span class="kn">from</span> <span class="nn">win32api</span> <span class="kn">import</span> <span class="n">RegCreateKey</span><span class="p">,</span> <span class="n">RegCloseKey</span><span class="p">,</span> <span class="n">RegCopyTree</span><span class="p">,</span> <span class="n">RegDeleteTree</span>
+<span class="kn">from</span> <span class="nn">win32api</span> <span class="kn">import</span> <span class="n">error</span> <span class="k">as</span> <span class="n">win32error</span>
+<span class="kn">import</span> <span class="nn">winreg</span>
+
+<span class="n">app</span> <span class="o">=</span> <span class="n">Flask</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+<span class="n">MAIN_KEYS</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="mi">0</span><span class="p">:</span> <span class="n">winreg</span><span class="o">.</span><span class="n">HKEY_CLASSES_ROOT</span><span class="p">,</span>
+    <span class="mi">1</span><span class="p">:</span> <span class="n">winreg</span><span class="o">.</span><span class="n">HKEY_CURRENT_USER</span><span class="p">,</span>
+    <span class="mi">2</span><span class="p">:</span> <span class="n">winreg</span><span class="o">.</span><span class="n">HKEY_LOCAL_MACHINE</span><span class="p">,</span>
+    <span class="mi">3</span><span class="p">:</span> <span class="n">winreg</span><span class="o">.</span><span class="n">HKEY_USERS</span><span class="p">,</span>
+    <span class="mi">4</span><span class="p">:</span> <span class="n">winreg</span><span class="o">.</span><span class="n">HKEY_CURRENT_CONFIG</span>
+<span class="p">}</span>
+
+<span class="n">VALUE_TYPES</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="n">winreg</span><span class="o">.</span><span class="n">REG_BINARY</span><span class="p">:</span> <span class="s1">&#39;REG_BINARY&#39;</span><span class="p">,</span>
+    <span class="n">winreg</span><span class="o">.</span><span class="n">REG_DWORD</span><span class="p">:</span> <span class="s1">&#39;REG_DWORD&#39;</span><span class="p">,</span>
+    <span class="n">winreg</span><span class="o">.</span><span class="n">REG_DWORD_BIG_ENDIAN</span><span class="p">:</span> <span class="s1">&#39;REG_DWORD_BIG_ENDIAN&#39;</span><span class="p">,</span>
+    <span class="n">winreg</span><span class="o">.</span><span class="n">REG_EXPAND_SZ</span><span class="p">:</span> <span class="s1">&#39;REG_EXPAND_SZ&#39;</span><span class="p">,</span>
+    <span class="n">winreg</span><span class="o">.</span><span class="n">REG_LINK</span><span class="p">:</span> <span class="s1">&#39;REG_LINK&#39;</span><span class="p">,</span>
+    <span class="n">winreg</span><span class="o">.</span><span class="n">REG_MULTI_SZ</span><span class="p">:</span> <span class="s1">&#39;REG_MULTI_SZ&#39;</span><span class="p">,</span>
+    <span class="n">winreg</span><span class="o">.</span><span class="n">REG_NONE</span><span class="p">:</span> <span class="s1">&#39;REG_NONE&#39;</span><span class="p">,</span>
+    <span class="n">winreg</span><span class="o">.</span><span class="n">REG_QWORD</span><span class="p">:</span> <span class="s1">&#39;REG_QWORD&#39;</span><span class="p">,</span>
+    <span class="n">winreg</span><span class="o">.</span><span class="n">REG_RESOURCE_LIST</span><span class="p">:</span> <span class="s1">&#39;REG_RESOURCE_LIST&#39;</span><span class="p">,</span>
+    <span class="n">winreg</span><span class="o">.</span><span class="n">REG_FULL_RESOURCE_DESCRIPTOR</span><span class="p">:</span> <span class="s1">&#39;REG_FULL_RESOURCE_DESCRIPTOR&#39;</span><span class="p">,</span>
+    <span class="n">winreg</span><span class="o">.</span><span class="n">REG_RESOURCE_REQUIREMENTS_LIST</span><span class="p">:</span> <span class="s1">&#39;REG_RESOURCE_REQUIREMENTS_LIST&#39;</span><span class="p">,</span>
+    <span class="n">winreg</span><span class="o">.</span><span class="n">REG_SZ</span><span class="p">:</span> <span class="s1">&#39;REG_SZ&#39;</span>
+<span class="p">}</span>
+
+<span class="n">MODIFIABLE_TYPES</span> <span class="o">=</span> <span class="p">[</span><span class="n">winreg</span><span class="o">.</span><span class="n">REG_SZ</span><span class="p">,</span> <span class="n">winreg</span><span class="o">.</span><span class="n">REG_MULTI_SZ</span><span class="p">,</span> <span class="n">winreg</span><span class="o">.</span><span class="n">REG_EXPAND_SZ</span><span class="p">,</span> <span class="n">winreg</span><span class="o">.</span><span class="n">REG_DWORD</span><span class="p">]</span>
+
+
+<div class="viewcode-block" id="win32_handle"><a class="viewcode-back" href="../app.html#app.win32_handle">[docs]</a><span class="k">def</span> <span class="nf">win32_handle</span><span class="p">(</span><span class="n">constant</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Returns a win32con constant corresponding to the same registry key as a given winreg constant.</span>
+
+<span class="sd">    :param constant: winreg constant associated to one of the 5 root registry keys</span>
+<span class="sd">    :type constant: int</span>
+<span class="sd">    :return: win32con constant associated to the same root registry key as the function parameter</span>
+<span class="sd">    :rtype: int</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">if</span> <span class="n">constant</span> <span class="o">==</span> <span class="n">winreg</span><span class="o">.</span><span class="n">HKEY_CLASSES_ROOT</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">HKEY_CLASSES_ROOT</span>
+    <span class="k">elif</span> <span class="n">constant</span> <span class="o">==</span> <span class="n">winreg</span><span class="o">.</span><span class="n">HKEY_CURRENT_USER</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">HKEY_CURRENT_USER</span>
+    <span class="k">elif</span> <span class="n">constant</span> <span class="o">==</span> <span class="n">winreg</span><span class="o">.</span><span class="n">HKEY_LOCAL_MACHINE</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">HKEY_LOCAL_MACHINE</span>
+    <span class="k">elif</span> <span class="n">constant</span> <span class="o">==</span> <span class="n">winreg</span><span class="o">.</span><span class="n">HKEY_USERS</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">HKEY_USERS</span>
+    <span class="k">elif</span> <span class="n">constant</span> <span class="o">==</span> <span class="n">winreg</span><span class="o">.</span><span class="n">HKEY_CURRENT_CONFIG</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">HKEY_CURRENT_CONFIG</span></div>
+
+
+<div class="viewcode-block" id="get_key_subkey"><a class="viewcode-back" href="../app.html#app.get_key_subkey">[docs]</a><span class="k">def</span> <span class="nf">get_key_subkey</span><span class="p">(</span><span class="n">param</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Gets an url string containing a path to a registry key and returns values required to open it.</span>
+
+<span class="sd">    :param param: url string containing a number from 0 to 4 associated to a root key and the path to a registry key</span>
+<span class="sd">    :type param: str</span>
+<span class="sd">    :return: tuple of winreg int constant for a root key and the path string</span>
+<span class="sd">    :rtype: (int, str)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">param</span> <span class="o">=</span> <span class="n">unquote</span><span class="p">(</span><span class="n">param</span><span class="p">)</span>
+    <span class="n">base_key</span> <span class="o">=</span> <span class="n">MAIN_KEYS</span><span class="p">[</span><span class="nb">int</span><span class="p">(</span><span class="n">param</span><span class="p">[</span><span class="mi">0</span><span class="p">])]</span>
+    <span class="n">sub_key</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">param</span><span class="p">[</span><span class="mi">2</span><span class="p">:])</span>
+    <span class="k">return</span> <span class="n">base_key</span><span class="p">,</span> <span class="n">sub_key</span></div>
+
+
+<div class="viewcode-block" id="get_key_subkey_param1"><a class="viewcode-back" href="../app.html#app.get_key_subkey_param1">[docs]</a><span class="k">def</span> <span class="nf">get_key_subkey_param1</span><span class="p">(</span><span class="n">param</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Same `get_key_subkey`, but also contains a third parameter, delimited by &#39;\\param1\\&#39;.</span>
+
+<span class="sd">    :param param: url string containing a number from 0 to 4, the path to a registry key and a string</span>
+<span class="sd">    :type param: str</span>
+<span class="sd">    :return: tuple of winreg int constant for a root key, the path string and a second string</span>
+<span class="sd">    :rtype: (int, str, str)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">param</span> <span class="o">=</span> <span class="n">unquote</span><span class="p">(</span><span class="n">param</span><span class="p">)</span>
+    <span class="n">pos</span> <span class="o">=</span> <span class="n">param</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\\\\</span><span class="s1">param1</span><span class="se">\\\\</span><span class="s1">&#39;</span><span class="p">)</span>
+    <span class="n">base_key</span> <span class="o">=</span> <span class="n">MAIN_KEYS</span><span class="p">[</span><span class="nb">int</span><span class="p">(</span><span class="n">param</span><span class="p">[</span><span class="mi">0</span><span class="p">])]</span>
+    <span class="n">sub_key</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">param</span><span class="p">[</span><span class="mi">2</span><span class="p">:</span><span class="n">pos</span><span class="p">])</span>
+    <span class="n">value</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">param</span><span class="p">[</span><span class="n">pos</span> <span class="o">+</span> <span class="mi">10</span><span class="p">:])</span>
+    <span class="k">return</span> <span class="n">base_key</span><span class="p">,</span> <span class="n">sub_key</span><span class="p">,</span> <span class="n">value</span></div>
+
+
+<div class="viewcode-block" id="get_key_subkey_param1_param2"><a class="viewcode-back" href="../app.html#app.get_key_subkey_param1_param2">[docs]</a><span class="k">def</span> <span class="nf">get_key_subkey_param1_param2</span><span class="p">(</span><span class="n">param</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Same as `get_key_subkey_param1`, but with an extra string parameter, delimited by &#39;\\param2\\&#39;</span>
+
+<span class="sd">    :param param: url string containing a number from 0 to 4, the path to a registry key and 2 strings</span>
+<span class="sd">    :type param: str</span>
+<span class="sd">    :return: tuple of winreg int constant for a root key, the path string and a second string</span>
+<span class="sd">    :rtype: (int, str, str, str)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">param</span> <span class="o">=</span> <span class="n">unquote</span><span class="p">(</span><span class="n">param</span><span class="p">)</span>
+    <span class="n">pos1</span> <span class="o">=</span> <span class="n">param</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\\\\</span><span class="s1">param1</span><span class="se">\\\\</span><span class="s1">&#39;</span><span class="p">)</span>
+    <span class="n">pos2</span> <span class="o">=</span> <span class="n">param</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\\\\</span><span class="s1">param2</span><span class="se">\\\\</span><span class="s1">&#39;</span><span class="p">)</span>
+    <span class="n">base_key</span> <span class="o">=</span> <span class="n">MAIN_KEYS</span><span class="p">[</span><span class="nb">int</span><span class="p">(</span><span class="n">param</span><span class="p">[</span><span class="mi">0</span><span class="p">])]</span>
+    <span class="n">sub_key</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">param</span><span class="p">[</span><span class="mi">2</span><span class="p">:</span><span class="n">pos1</span><span class="p">])</span>
+    <span class="n">value</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">param</span><span class="p">[</span><span class="n">pos1</span> <span class="o">+</span> <span class="mi">10</span><span class="p">:</span> <span class="n">pos2</span><span class="p">])</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">param</span><span class="p">[</span><span class="n">pos2</span> <span class="o">+</span> <span class="mi">10</span><span class="p">:])</span>
+    <span class="k">return</span> <span class="n">base_key</span><span class="p">,</span> <span class="n">sub_key</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">data</span></div>
+
+
+<div class="viewcode-block" id="value_number"><a class="viewcode-back" href="../app.html#app.value_number">[docs]</a><span class="k">def</span> <span class="nf">value_number</span><span class="p">(</span><span class="n">base_key</span><span class="p">,</span> <span class="n">sub_key</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Gets a registry key handle and name, and the name of a value inside that key, returns the value&#39;s index.</span>
+
+<span class="sd">    :param base_key: handle for a registry key</span>
+<span class="sd">    :type base_key: handle</span>
+<span class="sd">    :param sub_key: name of a sub-key of handle</span>
+<span class="sd">    :type sub_key: str</span>
+<span class="sd">    :param value: name of a value from the key described by handle and sub_key</span>
+<span class="sd">    :type value: str</span>
+<span class="sd">    :return: index of value inside the key, 0 if the key could not be opened or value is not inside the key</span>
+<span class="sd">    :rtype: int</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">handle</span> <span class="o">=</span> <span class="n">winreg</span><span class="o">.</span><span class="n">OpenKey</span><span class="p">(</span><span class="n">base_key</span><span class="p">,</span> <span class="n">sub_key</span><span class="p">)</span>
+        <span class="n">length</span> <span class="o">=</span> <span class="n">winreg</span><span class="o">.</span><span class="n">QueryInfoKey</span><span class="p">(</span><span class="n">handle</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">length</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">value</span> <span class="o">==</span> <span class="n">winreg</span><span class="o">.</span><span class="n">EnumValue</span><span class="p">(</span><span class="n">handle</span><span class="p">,</span> <span class="n">i</span><span class="p">)[</span><span class="mi">0</span><span class="p">]:</span>
+                <span class="n">handle</span><span class="o">.</span><span class="n">Close</span><span class="p">()</span>
+                <span class="k">return</span> <span class="n">i</span> <span class="o">+</span> <span class="mi">1</span>
+        <span class="n">handle</span><span class="o">.</span><span class="n">Close</span><span class="p">()</span>
+    <span class="k">except</span> <span class="ne">OSError</span><span class="p">:</span>
+        <span class="k">return</span> <span class="mi">0</span>
+    <span class="k">return</span> <span class="mi">0</span></div>
+
+
+<div class="viewcode-block" id="key_number"><a class="viewcode-back" href="../app.html#app.key_number">[docs]</a><span class="k">def</span> <span class="nf">key_number</span><span class="p">(</span><span class="n">base_key</span><span class="p">,</span> <span class="n">sub_key</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Gets a registry key handle and name, returns index of that key in its parent&#39;s subkeys.</span>
+
+<span class="sd">    :param base_key: handle for a registry key</span>
+<span class="sd">    :type base_key: handle</span>
+<span class="sd">    :param sub_key: name of a sub-key of handle</span>
+<span class="sd">    :type sub_key: str</span>
+<span class="sd">    :return: index of the key inside its parent, 0 if the key could not be opened</span>
+<span class="sd">    :rtype: int</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">if</span> <span class="n">sub_key</span><span class="o">.</span><span class="fm">__contains__</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\\</span><span class="s1">&#39;</span><span class="p">):</span>
+        <span class="n">pos</span> <span class="o">=</span> <span class="n">sub_key</span><span class="o">.</span><span class="n">rfind</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\\</span><span class="s1">&#39;</span><span class="p">)</span>
+        <span class="n">parent</span> <span class="o">=</span> <span class="n">sub_key</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="n">pos</span><span class="p">]</span>
+        <span class="n">child</span> <span class="o">=</span> <span class="n">sub_key</span><span class="p">[</span><span class="n">pos</span> <span class="o">+</span> <span class="mi">1</span><span class="p">:]</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">parent</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+        <span class="n">child</span> <span class="o">=</span> <span class="n">sub_key</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">handle</span> <span class="o">=</span> <span class="n">winreg</span><span class="o">.</span><span class="n">OpenKey</span><span class="p">(</span><span class="n">base_key</span><span class="p">,</span> <span class="n">parent</span><span class="p">)</span>
+        <span class="n">length</span> <span class="o">=</span> <span class="n">winreg</span><span class="o">.</span><span class="n">QueryInfoKey</span><span class="p">(</span><span class="n">handle</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">length</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">child</span> <span class="o">==</span> <span class="n">winreg</span><span class="o">.</span><span class="n">EnumKey</span><span class="p">(</span><span class="n">handle</span><span class="p">,</span> <span class="n">i</span><span class="p">):</span>
+                <span class="n">handle</span><span class="o">.</span><span class="n">Close</span><span class="p">()</span>
+                <span class="k">return</span> <span class="n">i</span> <span class="o">+</span> <span class="mi">1</span>
+        <span class="n">handle</span><span class="o">.</span><span class="n">Close</span><span class="p">()</span>
+    <span class="k">except</span> <span class="ne">OSError</span><span class="p">:</span>
+        <span class="k">return</span> <span class="mi">0</span>
+    <span class="k">return</span> <span class="mi">0</span></div>
+
+
+<div class="viewcode-block" id="create_key"><a class="viewcode-back" href="../app.html#app.create_key">[docs]</a><span class="nd">@app</span><span class="o">.</span><span class="n">route</span><span class="p">(</span><span class="s1">&#39;/create_key/&lt;path:param&gt;&#39;</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">create_key</span><span class="p">(</span><span class="n">param</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Creates new registry key.</span>
+
+<span class="sd">    Receives the path to a registry key and creates a new sub-key inside it, named &#39;New Key #n&#39;, where n is the smallest</span>
+<span class="sd">    available number.</span>
+
+<span class="sd">    :param param: url string containing path to an existing registry key</span>
+<span class="sd">    :type param: str</span>
+<span class="sd">    :return: json string confirming the function was successful, or an error message</span>
+<span class="sd">    :rtype: str</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">base_key</span><span class="p">,</span> <span class="n">sub_key</span> <span class="o">=</span> <span class="n">get_key_subkey</span><span class="p">(</span><span class="n">param</span><span class="p">)</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">handle</span> <span class="o">=</span> <span class="n">winreg</span><span class="o">.</span><span class="n">OpenKey</span><span class="p">(</span><span class="n">base_key</span><span class="p">,</span> <span class="n">sub_key</span><span class="p">)</span>
+        <span class="n">current_keys</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">sub_key_count</span> <span class="o">=</span> <span class="n">winreg</span><span class="o">.</span><span class="n">QueryInfoKey</span><span class="p">(</span><span class="n">handle</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">sub_key_count</span><span class="p">):</span>
+            <span class="n">current_keys</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">winreg</span><span class="o">.</span><span class="n">EnumKey</span><span class="p">(</span><span class="n">handle</span><span class="p">,</span> <span class="n">i</span><span class="p">))</span>
+        <span class="n">i</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="n">new_key_name</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;New Key #</span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="p">)</span><span class="si">}</span><span class="s1">&#39;</span>
+        <span class="k">while</span> <span class="n">new_key_name</span> <span class="ow">in</span> <span class="n">current_keys</span><span class="p">:</span>
+            <span class="n">i</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="n">new_key_name</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;New Key #</span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="p">)</span><span class="si">}</span><span class="s1">&#39;</span>
+        <span class="n">new_key</span> <span class="o">=</span> <span class="n">winreg</span><span class="o">.</span><span class="n">CreateKey</span><span class="p">(</span><span class="n">handle</span><span class="p">,</span> <span class="n">new_key_name</span><span class="p">)</span>
+        <span class="n">new_key</span><span class="o">.</span><span class="n">Close</span><span class="p">()</span>
+        <span class="n">handle</span><span class="o">.</span><span class="n">Close</span><span class="p">()</span>
+    <span class="k">except</span> <span class="ne">OSError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">dumps</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;[CREATE_KEY]: </span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">dumps</span><span class="p">(</span><span class="s1">&#39;[CREATE_KEY]: Success&#39;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="create_value"><a class="viewcode-back" href="../app.html#app.create_value">[docs]</a><span class="nd">@app</span><span class="o">.</span><span class="n">route</span><span class="p">(</span><span class="s1">&#39;/create_value/&lt;path:param&gt;&#39;</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">create_value</span><span class="p">(</span><span class="n">param</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Creates value inside registry key.</span>
+
+<span class="sd">    Receives the path to a registry key and a number associated to a value type and creates a new value inside the key,</span>
+<span class="sd">    named &#39;New Value #n&#39; of the desired type, where n is the smallest available number.</span>
+
+<span class="sd">    :param param: url string containing path to an existing registry key and a value type</span>
+<span class="sd">    :type param: str</span>
+<span class="sd">    :return: json string confirming the function was successful, or an error message</span>
+<span class="sd">    :rtype: str</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">base_key</span><span class="p">,</span> <span class="n">sub_key</span><span class="p">,</span> <span class="n">value_type</span> <span class="o">=</span> <span class="n">get_key_subkey_param1</span><span class="p">(</span><span class="n">param</span><span class="p">)</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">handle</span> <span class="o">=</span> <span class="n">winreg</span><span class="o">.</span><span class="n">OpenKey</span><span class="p">(</span><span class="n">base_key</span><span class="p">,</span> <span class="n">sub_key</span><span class="p">,</span> <span class="n">access</span><span class="o">=</span><span class="n">winreg</span><span class="o">.</span><span class="n">KEY_QUERY_VALUE</span> <span class="o">|</span> <span class="n">winreg</span><span class="o">.</span><span class="n">KEY_SET_VALUE</span><span class="p">)</span>
+        <span class="n">current_values</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">value_count</span> <span class="o">=</span> <span class="n">winreg</span><span class="o">.</span><span class="n">QueryInfoKey</span><span class="p">(</span><span class="n">handle</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">value_count</span><span class="p">):</span>
+            <span class="n">current_values</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">winreg</span><span class="o">.</span><span class="n">EnumValue</span><span class="p">(</span><span class="n">handle</span><span class="p">,</span> <span class="n">i</span><span class="p">)[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="n">i</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="n">new_value_name</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;New Value #</span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="p">)</span><span class="si">}</span><span class="s1">&#39;</span>
+        <span class="k">while</span> <span class="n">new_value_name</span> <span class="ow">in</span> <span class="n">current_values</span><span class="p">:</span>
+            <span class="n">i</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="n">new_value_name</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;New Value #</span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="p">)</span><span class="si">}</span><span class="s1">&#39;</span>
+        <span class="n">value_type</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">value_type</span><span class="p">)</span>
+        <span class="k">if</span> <span class="mi">0</span> <span class="o">&lt;=</span> <span class="n">value_type</span> <span class="o">&lt;=</span> <span class="mi">3</span><span class="p">:</span>
+            <span class="n">value_type</span> <span class="o">=</span> <span class="n">MODIFIABLE_TYPES</span><span class="p">[</span><span class="n">value_type</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">value_type</span> <span class="o">=</span> <span class="n">MODIFIABLE_TYPES</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">value_type</span> <span class="o">==</span> <span class="n">winreg</span><span class="o">.</span><span class="n">REG_MULTI_SZ</span><span class="p">:</span>
+            <span class="n">value_data</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;&#39;</span><span class="p">]</span>
+        <span class="k">elif</span> <span class="n">value_type</span> <span class="o">==</span> <span class="n">winreg</span><span class="o">.</span><span class="n">REG_DWORD</span><span class="p">:</span>
+            <span class="n">value_data</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">value_data</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+        <span class="n">winreg</span><span class="o">.</span><span class="n">SetValueEx</span><span class="p">(</span><span class="n">handle</span><span class="p">,</span> <span class="n">new_value_name</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="n">value_type</span><span class="p">,</span> <span class="n">value_data</span><span class="p">)</span>
+        <span class="n">handle</span><span class="o">.</span><span class="n">Close</span><span class="p">()</span>
+    <span class="k">except</span> <span class="ne">OSError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">dumps</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;[CREATE_VALUE]: </span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">dumps</span><span class="p">(</span><span class="s1">&#39;[CREATE_VALUE]: Success&#39;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="edit_value"><a class="viewcode-back" href="../app.html#app.edit_value">[docs]</a><span class="nd">@app</span><span class="o">.</span><span class="n">route</span><span class="p">(</span><span class="s1">&#39;/edit_value/&lt;path:param&gt;&#39;</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">edit_value</span><span class="p">(</span><span class="n">param</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Changes the data inside a value from a registry key.</span>
+
+<span class="sd">    Receives the path to a registry key, a value name and value data, opens the key and changes the given value&#39;s data.</span>
+
+<span class="sd">    :param param: url string containing path to a key, name of a value and new data for that value</span>
+<span class="sd">    :type param: str</span>
+<span class="sd">    :return: json string confirming the function was successful, or an error message</span>
+<span class="sd">    :rtype: str</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">base_key</span><span class="p">,</span> <span class="n">sub_key</span><span class="p">,</span> <span class="n">value_name</span><span class="p">,</span> <span class="n">value_data</span> <span class="o">=</span> <span class="n">get_key_subkey_param1_param2</span><span class="p">(</span><span class="n">param</span><span class="p">)</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">handle</span> <span class="o">=</span> <span class="n">winreg</span><span class="o">.</span><span class="n">OpenKey</span><span class="p">(</span><span class="n">base_key</span><span class="p">,</span> <span class="n">sub_key</span><span class="p">,</span> <span class="n">access</span><span class="o">=</span><span class="n">winreg</span><span class="o">.</span><span class="n">KEY_QUERY_VALUE</span> <span class="o">|</span> <span class="n">winreg</span><span class="o">.</span><span class="n">KEY_SET_VALUE</span><span class="p">)</span>
+        <span class="n">value_type</span> <span class="o">=</span> <span class="n">winreg</span><span class="o">.</span><span class="n">QueryValueEx</span><span class="p">(</span><span class="n">handle</span><span class="p">,</span> <span class="n">value_name</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">value_type</span> <span class="o">==</span> <span class="n">winreg</span><span class="o">.</span><span class="n">REG_DWORD</span><span class="p">:</span>
+            <span class="n">value_data</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">value_data</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">value_type</span> <span class="o">==</span> <span class="n">winreg</span><span class="o">.</span><span class="n">REG_MULTI_SZ</span><span class="p">:</span>
+            <span class="n">value_data</span> <span class="o">=</span> <span class="n">value_data</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;[</span><span class="se">\\</span><span class="s1">end]&#39;</span><span class="p">)</span>
+        <span class="n">winreg</span><span class="o">.</span><span class="n">SetValueEx</span><span class="p">(</span><span class="n">handle</span><span class="p">,</span> <span class="n">value_name</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="n">value_type</span><span class="p">,</span> <span class="n">value_data</span><span class="p">)</span>
+        <span class="n">handle</span><span class="o">.</span><span class="n">Close</span><span class="p">()</span>
+    <span class="k">except</span> <span class="ne">OSError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">dumps</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;[EDIT_VALUE]: </span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">dumps</span><span class="p">(</span><span class="s1">&#39;[EDIT_VALUE]: Success&#39;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="rename_value"><a class="viewcode-back" href="../app.html#app.rename_value">[docs]</a><span class="nd">@app</span><span class="o">.</span><span class="n">route</span><span class="p">(</span><span class="s1">&#39;/rename_value/&lt;path:param&gt;&#39;</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">rename_value</span><span class="p">(</span><span class="n">param</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Renames value in registry key by copying it with a new name and deleting the old one.</span>
+
+<span class="sd">    :param param: url string containing path to an existing key, name of an existing value and name for a new value</span>
+<span class="sd">    :type param: str</span>
+<span class="sd">    :return: json string confirming the function was successful, or an error message</span>
+<span class="sd">    :rtype: str</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">base_key</span><span class="p">,</span> <span class="n">sub_key</span><span class="p">,</span> <span class="n">old_name</span><span class="p">,</span> <span class="n">new_name</span> <span class="o">=</span> <span class="n">get_key_subkey_param1_param2</span><span class="p">(</span><span class="n">param</span><span class="p">)</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">handle</span> <span class="o">=</span> <span class="n">winreg</span><span class="o">.</span><span class="n">OpenKey</span><span class="p">(</span><span class="n">base_key</span><span class="p">,</span> <span class="n">sub_key</span><span class="p">,</span> <span class="n">access</span><span class="o">=</span><span class="n">winreg</span><span class="o">.</span><span class="n">KEY_QUERY_VALUE</span> <span class="o">|</span> <span class="n">winreg</span><span class="o">.</span><span class="n">KEY_SET_VALUE</span><span class="p">)</span>
+        <span class="n">val</span> <span class="o">=</span> <span class="n">winreg</span><span class="o">.</span><span class="n">QueryValueEx</span><span class="p">(</span><span class="n">handle</span><span class="p">,</span> <span class="n">old_name</span><span class="p">)</span>
+        <span class="n">winreg</span><span class="o">.</span><span class="n">SetValueEx</span><span class="p">(</span><span class="n">handle</span><span class="p">,</span> <span class="n">new_name</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="n">val</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">val</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="n">winreg</span><span class="o">.</span><span class="n">DeleteValue</span><span class="p">(</span><span class="n">handle</span><span class="p">,</span> <span class="n">old_name</span><span class="p">)</span>
+        <span class="n">handle</span><span class="o">.</span><span class="n">Close</span><span class="p">()</span>
+    <span class="k">except</span> <span class="ne">OSError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">dumps</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;[EDIT_VALUE]: </span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">dumps</span><span class="p">(</span><span class="s1">&#39;[EDIT_VALUE]: Success&#39;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="rename_key"><a class="viewcode-back" href="../app.html#app.rename_key">[docs]</a><span class="nd">@app</span><span class="o">.</span><span class="n">route</span><span class="p">(</span><span class="s1">&#39;/rename_key/&lt;path:param&gt;&#39;</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">rename_key</span><span class="p">(</span><span class="n">param</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Renames registry key by copying it with a new name and deleting the old one.</span>
+
+<span class="sd">    :param param: url string containing path to an existing key and name for a new key</span>
+<span class="sd">    :type param: str</span>
+<span class="sd">    :return: json string confirming the function was successful, or an error message</span>
+<span class="sd">    :rtype: str</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">base_key</span><span class="p">,</span> <span class="n">sub_key</span><span class="p">,</span> <span class="n">name</span> <span class="o">=</span> <span class="n">get_key_subkey_param1</span><span class="p">(</span><span class="n">param</span><span class="p">)</span>
+    <span class="n">base_key</span> <span class="o">=</span> <span class="n">win32_handle</span><span class="p">(</span><span class="n">base_key</span><span class="p">)</span>
+    <span class="n">base_name</span> <span class="o">=</span> <span class="n">sub_key</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="n">sub_key</span><span class="o">.</span><span class="n">rfind</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\\</span><span class="s1">&#39;</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">handle</span> <span class="o">=</span> <span class="n">RegCreateKey</span><span class="p">(</span><span class="n">base_key</span><span class="p">,</span> <span class="n">base_name</span> <span class="o">+</span> <span class="n">name</span><span class="p">)</span>
+        <span class="n">RegCopyTree</span><span class="p">(</span><span class="n">base_key</span><span class="p">,</span> <span class="n">sub_key</span><span class="p">,</span> <span class="n">handle</span><span class="p">)</span>
+        <span class="n">RegCloseKey</span><span class="p">(</span><span class="n">handle</span><span class="p">)</span>
+        <span class="n">RegDeleteTree</span><span class="p">(</span><span class="n">base_key</span><span class="p">,</span> <span class="n">sub_key</span><span class="p">)</span>
+    <span class="k">except</span> <span class="n">win32error</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">dumps</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;[RENAME_KEY]: </span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">dumps</span><span class="p">(</span><span class="s1">&#39;[RENAME_KEY]: Success&#39;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="delete_key"><a class="viewcode-back" href="../app.html#app.delete_key">[docs]</a><span class="nd">@app</span><span class="o">.</span><span class="n">route</span><span class="p">(</span><span class="s1">&#39;/delete_key/&lt;path:param&gt;&#39;</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">delete_key</span><span class="p">(</span><span class="n">param</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Deletes registry keys, with all its sub-keys.</span>
+
+<span class="sd">    :param param: url string containing path to an existing key</span>
+<span class="sd">    :type param: str</span>
+<span class="sd">    :return: json string confirming the function was successful, or an error message</span>
+<span class="sd">    :rtype: str</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">base_key</span><span class="p">,</span> <span class="n">sub_key</span> <span class="o">=</span> <span class="n">get_key_subkey</span><span class="p">(</span><span class="n">param</span><span class="p">)</span>
+    <span class="n">base_key</span> <span class="o">=</span> <span class="n">win32_handle</span><span class="p">(</span><span class="n">base_key</span><span class="p">)</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">RegDeleteTree</span><span class="p">(</span><span class="n">base_key</span><span class="p">,</span> <span class="n">sub_key</span><span class="p">)</span>
+    <span class="k">except</span> <span class="n">win32error</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">dumps</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;[DELETE_KEY]: </span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">dumps</span><span class="p">(</span><span class="s1">&#39;[DELETE_KEY]: Success&#39;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="delete_value"><a class="viewcode-back" href="../app.html#app.delete_value">[docs]</a><span class="nd">@app</span><span class="o">.</span><span class="n">route</span><span class="p">(</span><span class="s1">&#39;/delete_value/&lt;path:param&gt;&#39;</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">delete_value</span><span class="p">(</span><span class="n">param</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Deletes value from registry key.</span>
+
+<span class="sd">    :param param: url string containing path to an existing key and name of a value</span>
+<span class="sd">    :type param: str</span>
+<span class="sd">    :return: json string confirming the function was successful, or an error message</span>
+<span class="sd">    :rtype: str</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">base_key</span><span class="p">,</span> <span class="n">sub_key</span><span class="p">,</span> <span class="n">value</span> <span class="o">=</span> <span class="n">get_key_subkey_param1</span><span class="p">(</span><span class="n">param</span><span class="p">)</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">handle</span> <span class="o">=</span> <span class="n">winreg</span><span class="o">.</span><span class="n">OpenKey</span><span class="p">(</span><span class="n">base_key</span><span class="p">,</span> <span class="n">sub_key</span><span class="p">,</span> <span class="n">access</span><span class="o">=</span><span class="n">winreg</span><span class="o">.</span><span class="n">KEY_SET_VALUE</span><span class="p">)</span>
+        <span class="n">winreg</span><span class="o">.</span><span class="n">DeleteValue</span><span class="p">(</span><span class="n">handle</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
+        <span class="n">handle</span><span class="o">.</span><span class="n">Close</span><span class="p">()</span>
+    <span class="k">except</span> <span class="ne">OSError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">dumps</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;[DELETE_VALUE]: </span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">dumps</span><span class="p">(</span><span class="s1">&#39;[DELETE_VALUE]: Success&#39;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="find_string"><a class="viewcode-back" href="../app.html#app.find_string">[docs]</a><span class="nd">@app</span><span class="o">.</span><span class="n">route</span><span class="p">(</span><span class="s1">&#39;/find_string/&lt;path:param&gt;&#39;</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">find_string</span><span class="p">(</span><span class="n">param</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Recursively searches for string in registry.</span>
+
+<span class="sd">    Receives the path to a registry key, a value name and a string to be searched.</span>
+<span class="sd">    The key and value are the starting point.</span>
+
+<span class="sd">    #. Finds the value&#39;s index inside the key.</span>
+<span class="sd">    #. Calls `recursive_search`, ignoring the first value_index values.</span>
+<span class="sd">    #. If the search was not successful, finds index of searched key inside parent key.</span>
+<span class="sd">    #. Recursively searches parent key, ignoring the first key_index sub-keys.</span>
+<span class="sd">    #. If the search keeps failing until it reaches the root of one of the main keys, it moves on to the next root key.</span>
+<span class="sd">    #. Repeats the process until it finds a match or reaches the end of the registry.</span>
+
+<span class="sd">    Returns either the path to a key and value or an empty string.</span>
+
+<span class="sd">    :param param: url string containing path to the search starting point (registry key and value)</span>
+<span class="sd">    :type param: str</span>
+<span class="sd">    :return: json string containing path to first occurrence, or an empty string if there are no matches</span>
+<span class="sd">    :rtype: str</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">base_key</span><span class="p">,</span> <span class="n">sub_key</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">search_string</span> <span class="o">=</span> <span class="n">get_key_subkey_param1_param2</span><span class="p">(</span><span class="n">param</span><span class="p">)</span>
+    <span class="n">base_key_int</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">param</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+    <span class="n">start_value</span> <span class="o">=</span> <span class="n">value_number</span><span class="p">(</span><span class="n">base_key</span><span class="p">,</span> <span class="n">sub_key</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
+    <span class="n">rez</span> <span class="o">=</span> <span class="n">recursive_search</span><span class="p">(</span><span class="n">base_key</span><span class="p">,</span> <span class="n">sub_key</span><span class="p">,</span> <span class="n">search_string</span><span class="p">,</span> <span class="n">start_value</span><span class="o">=</span><span class="n">start_value</span><span class="p">)</span>
+    <span class="k">while</span> <span class="ow">not</span> <span class="n">rez</span><span class="p">:</span>
+        <span class="n">start_key</span> <span class="o">=</span> <span class="n">key_number</span><span class="p">(</span><span class="n">base_key</span><span class="p">,</span> <span class="n">sub_key</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">sub_key</span><span class="o">.</span><span class="fm">__contains__</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\\</span><span class="s1">&#39;</span><span class="p">):</span>
+            <span class="n">start_key</span> <span class="o">=</span> <span class="n">key_number</span><span class="p">(</span><span class="n">base_key</span><span class="p">,</span> <span class="n">sub_key</span><span class="p">)</span>
+            <span class="n">sub_key</span> <span class="o">=</span> <span class="n">sub_key</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="n">sub_key</span><span class="o">.</span><span class="n">rfind</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\\</span><span class="s1">&#39;</span><span class="p">)]</span>
+        <span class="k">elif</span> <span class="n">sub_key</span><span class="p">:</span>
+            <span class="n">sub_key</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+        <span class="k">elif</span> <span class="n">base_key_int</span> <span class="o">&lt;</span> <span class="mi">4</span><span class="p">:</span>
+            <span class="n">base_key_int</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="n">base_key</span> <span class="o">=</span> <span class="n">MAIN_KEYS</span><span class="p">[</span><span class="n">base_key_int</span><span class="p">]</span>
+            <span class="n">start_key</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">dumps</span><span class="p">(</span><span class="s1">&#39;&#39;</span><span class="p">)</span>
+        <span class="n">rez</span> <span class="o">=</span> <span class="n">recursive_search</span><span class="p">(</span><span class="n">base_key</span><span class="p">,</span> <span class="n">sub_key</span><span class="p">,</span> <span class="n">search_string</span><span class="p">,</span> <span class="n">start_key</span><span class="o">=</span><span class="n">start_key</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">sub_key</span><span class="p">:</span>
+        <span class="n">sub_key</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">base_key_int</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39;</span><span class="se">\\</span><span class="s1">&#39;</span> <span class="o">+</span> <span class="n">sub_key</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">sub_key</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">base_key_int</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">rez</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">dumps</span><span class="p">(</span><span class="n">sub_key</span> <span class="o">+</span> <span class="s1">&#39;</span><span class="se">\\</span><span class="s1">&#39;</span> <span class="o">+</span> <span class="n">rez</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">dumps</span><span class="p">(</span><span class="s1">&#39;&#39;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="recursive_search"><a class="viewcode-back" href="../app.html#app.recursive_search">[docs]</a><span class="k">def</span> <span class="nf">recursive_search</span><span class="p">(</span><span class="n">base_key</span><span class="p">,</span> <span class="n">sub_key</span><span class="p">,</span> <span class="n">search_string</span><span class="p">,</span> <span class="n">start_key</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">start_value</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Recursively searches for string in registry key.</span>
+
+<span class="sd">    Searches for search_string in values starting from start_value, and then in sub-keys starting from start_key.</span>
+
+<span class="sd">    :param base_key: handle for a registry key</span>
+<span class="sd">    :type base_key: handle</span>
+<span class="sd">    :param sub_key: name of sub-key of handle</span>
+<span class="sd">    :type sub_key: str</span>
+<span class="sd">    :param search_string: string that must be found</span>
+<span class="sd">    :type search_string: str</span>
+<span class="sd">    :param start_key: index of first key that will be searched, by default 0</span>
+<span class="sd">    :type start_key: int</span>
+<span class="sd">    :param start_value: index of first value that will be searched, by default 0</span>
+<span class="sd">    :type start_value: int</span>
+<span class="sd">    :return: path to key and value if search_string is found, or an empty string otherwise</span>
+<span class="sd">    :rtype: str</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">handle</span> <span class="o">=</span> <span class="n">winreg</span><span class="o">.</span><span class="n">OpenKey</span><span class="p">(</span><span class="n">base_key</span><span class="p">,</span> <span class="n">sub_key</span><span class="p">)</span>
+        <span class="n">length</span> <span class="o">=</span> <span class="n">winreg</span><span class="o">.</span><span class="n">QueryInfoKey</span><span class="p">(</span><span class="n">handle</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">start_value</span><span class="p">,</span> <span class="n">length</span><span class="p">[</span><span class="mi">1</span><span class="p">]):</span>
+            <span class="n">value</span> <span class="o">=</span> <span class="n">winreg</span><span class="o">.</span><span class="n">EnumValue</span><span class="p">(</span><span class="n">handle</span><span class="p">,</span> <span class="n">i</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">value</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="n">search_string</span> <span class="ow">or</span> <span class="nb">str</span><span class="p">(</span><span class="n">value</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> <span class="o">==</span> <span class="n">search_string</span><span class="p">:</span>
+                <span class="n">handle</span><span class="o">.</span><span class="n">Close</span><span class="p">()</span>
+                <span class="k">return</span> <span class="s1">&#39;</span><span class="se">\\</span><span class="s1">value</span><span class="se">\\\\</span><span class="s1">&#39;</span> <span class="o">+</span> <span class="n">value</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">start_key</span><span class="p">,</span> <span class="n">length</span><span class="p">[</span><span class="mi">0</span><span class="p">]):</span>
+            <span class="n">key</span> <span class="o">=</span> <span class="n">winreg</span><span class="o">.</span><span class="n">EnumKey</span><span class="p">(</span><span class="n">handle</span><span class="p">,</span> <span class="n">i</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">key</span> <span class="o">==</span> <span class="n">search_string</span><span class="p">:</span>
+                <span class="n">handle</span><span class="o">.</span><span class="n">Close</span><span class="p">()</span>
+                <span class="k">return</span> <span class="n">key</span> <span class="o">+</span> <span class="s1">&#39;</span><span class="se">\\\\</span><span class="s1">value</span><span class="se">\\\\</span><span class="s1">&#39;</span>
+            <span class="n">rez</span> <span class="o">=</span> <span class="n">recursive_search</span><span class="p">(</span><span class="n">handle</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">search_string</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">rez</span><span class="p">:</span>
+                <span class="n">handle</span><span class="o">.</span><span class="n">Close</span><span class="p">()</span>
+                <span class="k">return</span> <span class="n">key</span> <span class="o">+</span> <span class="s1">&#39;</span><span class="se">\\</span><span class="s1">&#39;</span> <span class="o">+</span> <span class="n">rez</span>
+        <span class="n">handle</span><span class="o">.</span><span class="n">Close</span><span class="p">()</span>
+        <span class="k">return</span> <span class="s1">&#39;&#39;</span>
+    <span class="k">except</span> <span class="ne">OSError</span><span class="p">:</span>
+        <span class="k">return</span> <span class="s1">&#39;&#39;</span></div>
+
+
+<div class="viewcode-block" id="inspect_key"><a class="viewcode-back" href="../app.html#app.inspect_key">[docs]</a><span class="nd">@app</span><span class="o">.</span><span class="n">route</span><span class="p">(</span><span class="s1">&#39;/inspect_key/&lt;path:param&gt;&#39;</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">inspect_key</span><span class="p">(</span><span class="n">param</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Returns a list of names, types and data for each value in a registry key.</span>
+
+<span class="sd">    :param param: url string containing path to an existing registry key</span>
+<span class="sd">    :type param: str</span>
+<span class="sd">    :return: json list of lists containing value-name, value-type, value-data</span>
+<span class="sd">    :rtype: str</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">base_key</span><span class="p">,</span> <span class="n">sub_key</span> <span class="o">=</span> <span class="n">get_key_subkey</span><span class="p">(</span><span class="n">param</span><span class="p">)</span>
+    <span class="n">result</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">found_default</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">handle</span> <span class="o">=</span> <span class="n">winreg</span><span class="o">.</span><span class="n">OpenKey</span><span class="p">(</span><span class="n">base_key</span><span class="p">,</span> <span class="n">sub_key</span><span class="p">)</span>
+        <span class="n">length</span> <span class="o">=</span> <span class="n">winreg</span><span class="o">.</span><span class="n">QueryInfoKey</span><span class="p">(</span><span class="n">handle</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">length</span><span class="p">):</span>
+            <span class="n">value</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">winreg</span><span class="o">.</span><span class="n">EnumValue</span><span class="p">(</span><span class="n">handle</span><span class="p">,</span> <span class="n">i</span><span class="p">))</span>
+            <span class="k">if</span> <span class="n">value</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;&#39;</span><span class="p">:</span>
+                <span class="n">found_default</span> <span class="o">=</span> <span class="kc">True</span>
+                <span class="n">result</span> <span class="o">=</span> <span class="p">[[</span><span class="s1">&#39;(default)&#39;</span><span class="p">,</span> <span class="n">value</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="s1">&#39;REG_SZ&#39;</span><span class="p">]]</span> <span class="o">+</span> <span class="n">result</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">value</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="n">VALUE_TYPES</span><span class="p">[</span><span class="n">value</span><span class="p">[</span><span class="mi">2</span><span class="p">]]</span>
+                <span class="n">result</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">value</span><span class="p">))</span>
+        <span class="n">handle</span><span class="o">.</span><span class="n">Close</span><span class="p">()</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">found_default</span><span class="p">:</span>
+            <span class="n">result</span> <span class="o">=</span> <span class="p">[[</span><span class="s1">&#39;(default)&#39;</span><span class="p">,</span> <span class="s1">&#39;(value not set)&#39;</span><span class="p">,</span> <span class="s1">&#39;REG_SZ&#39;</span><span class="p">]]</span> <span class="o">+</span> <span class="n">result</span>
+    <span class="k">except</span> <span class="ne">OSError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">dumps</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;[INSPECT_KEY]: </span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">dumps</span><span class="p">(</span><span class="n">result</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="expand_key"><a class="viewcode-back" href="../app.html#app.expand_key">[docs]</a><span class="nd">@app</span><span class="o">.</span><span class="n">route</span><span class="p">(</span><span class="s1">&#39;/expand_key/&lt;path:param&gt;&#39;</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">expand_key</span><span class="p">(</span><span class="n">param</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Returns a list of sub-keys in a registry key.</span>
+
+<span class="sd">    :param param: url string containing path to an existing registry key</span>
+<span class="sd">    :type param: str</span>
+<span class="sd">    :return: json list of strings</span>
+<span class="sd">    :rtype: str</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">base_key</span><span class="p">,</span> <span class="n">sub_key</span> <span class="o">=</span> <span class="n">get_key_subkey</span><span class="p">(</span><span class="n">param</span><span class="p">)</span>
+    <span class="n">result</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">handle</span> <span class="o">=</span> <span class="n">winreg</span><span class="o">.</span><span class="n">OpenKey</span><span class="p">(</span><span class="n">base_key</span><span class="p">,</span> <span class="n">sub_key</span><span class="p">)</span>
+        <span class="n">length</span> <span class="o">=</span> <span class="n">winreg</span><span class="o">.</span><span class="n">QueryInfoKey</span><span class="p">(</span><span class="n">handle</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">length</span><span class="p">):</span>
+            <span class="n">sub_sub_key</span> <span class="o">=</span> <span class="n">winreg</span><span class="o">.</span><span class="n">EnumKey</span><span class="p">(</span><span class="n">handle</span><span class="p">,</span> <span class="n">i</span><span class="p">)</span>
+            <span class="n">sub_handle</span> <span class="o">=</span> <span class="n">winreg</span><span class="o">.</span><span class="n">OpenKey</span><span class="p">(</span><span class="n">handle</span><span class="p">,</span> <span class="n">sub_sub_key</span><span class="p">,</span> <span class="n">access</span><span class="o">=</span><span class="n">winreg</span><span class="o">.</span><span class="n">KEY_QUERY_VALUE</span><span class="p">)</span>
+            <span class="n">has_sub_keys</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">winreg</span><span class="o">.</span><span class="n">QueryInfoKey</span><span class="p">(</span><span class="n">sub_handle</span><span class="p">)[</span><span class="mi">0</span><span class="p">])</span>
+            <span class="n">sub_handle</span><span class="o">.</span><span class="n">Close</span><span class="p">()</span>
+            <span class="n">result</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="n">has_sub_keys</span><span class="p">,</span> <span class="n">sub_sub_key</span><span class="p">])</span>
+        <span class="n">handle</span><span class="o">.</span><span class="n">Close</span><span class="p">()</span>
+    <span class="k">except</span> <span class="ne">OSError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">dumps</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;[EXPAND_KEY]: </span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">dumps</span><span class="p">(</span><span class="n">result</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="root"><a class="viewcode-back" href="../app.html#app.root">[docs]</a><span class="nd">@app</span><span class="o">.</span><span class="n">route</span><span class="p">(</span><span class="s1">&#39;/&#39;</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">root</span><span class="p">():</span>
+    <span class="k">return</span> <span class="n">render_template</span><span class="p">(</span><span class="s1">&#39;index.html&#39;</span><span class="p">)</span></div>
+
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
+    <span class="n">app</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">port</span><span class="o">=</span><span class="mi">80</span><span class="p">,</span> <span class="n">debug</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, Rotaru Sebastian-Gabriel 3B4.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
