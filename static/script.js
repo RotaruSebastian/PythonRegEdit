@@ -151,21 +151,24 @@ function rename_value() {
     // chestii prompt
 }
 function edit_value() {
-    // chestii prompt
     let key_name = document.getElementById('key_name');
-    let new_value = prompt('Enter new value');
+    let id = key_name.dataset.name;
+    let new_value = '';
+    if(key_name.dataset.type === 'REG_MULTI_SZ') {
+        new_value = prompt('Enter strings - use "[\\end]" as delimiter');
+    } else {
+        new_value = prompt('Enter new value');
+    }
     if(valid_value(key_name.dataset.type, new_value)) {
-        let param = key_name.id + '\\' + key_name.dataset.value + '\\' + new_value;
-        $.getJSON('/edit_value/' + encodeURIComponent(id), function (result) {
-            id = id.slice(0, id.lastIndexOf('\\'));
+        let param = id + '\\\\value\\\\' + key_name.dataset.value + '\\\\data\\\\' + new_value;
+        console.log(param);
+        $.getJSON('/edit_value/' + encodeURIComponent(param), function (result) {
             update_branch(id + '\\', false);
             select_key(id);
         });
     } else {
         window.alert('Invalid value');
     }
-    // key_name.dataset.value = this.id;
-    // key_name.dataset.type = this.dataset.type;
 }
 function delete_value() {
     let key_name = document.getElementById('key_name');
@@ -177,7 +180,10 @@ function delete_value() {
     });
 }
 function valid_value(type, new_value) {
-    return false;
+    if(type === 'REG_DWORD') {
+        return new_value >= 0 && new_value <= 4294967295;
+    }
+    return true;
 }
 function update_table() {
     let value = document.getElementById('key_name').dataset.value

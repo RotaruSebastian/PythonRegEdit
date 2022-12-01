@@ -141,7 +141,13 @@ def create_value(param):
 def edit_value(param):
     base_key, sub_key, value, data = get_key_value_data(param)
     try:
-        handle = winreg.OpenKey(base_key, sub_key)
+        handle = winreg.OpenKey(base_key, sub_key, access=winreg.KEY_SET_VALUE | winreg.KEY_QUERY_VALUE)
+        data_type = winreg.QueryValueEx(handle, value)[1]
+        if data_type == winreg.REG_DWORD:
+            data = int(data)
+        elif data_type == winreg.REG_MULTI_SZ:
+            data = data.split('[\\end]')
+        winreg.SetValueEx(handle, value, None, data_type, data)
         handle.Close()
     except OSError as e:
         return json.dumps(f'[EDIT_VALUE]: {str(e)}')
@@ -208,7 +214,7 @@ def delete_sub_key(handle):
 def delete_value(param):
     base_key, sub_key, value = get_key_value(param)
     try:
-        handle = winreg.OpenKey(base_key, sub_key, access=winreg.KEY_WRITE)
+        handle = winreg.OpenKey(base_key, sub_key, access=winreg.KEY_SET_VALUE)
         winreg.DeleteValue(handle, value)
         handle.Close()
     except OSError as e:

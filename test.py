@@ -14,6 +14,17 @@ def string_key_count(path, check=0):
         return -1
 
 
+def get_value_from_key(path):
+    base_key, sub_key, value = app.get_key_value(path)
+    try:
+        handle = winreg.OpenKey(base_key, sub_key)
+        data = winreg.QueryValueEx(handle, value)
+        handle.Close()
+        return str(data[0])
+    except OSError:
+        return -1
+
+
 class Test(unittest.TestCase):
     def test_get_key(self):
         key_tuple = app.get_key('4\\')
@@ -26,8 +37,8 @@ class Test(unittest.TestCase):
         self.assertEqual(key_tuple, (winreg.HKEY_CURRENT_CONFIG, 'New Key #1\\New Key #2', '0'))
 
     def test_get_key_value_data(self):
-        key_tuple = app.get_key_value_data('4\\New Key #1\\New Key #2\\\\value\\\\verif\\\\data\\\\123')
-        self.assertEqual(key_tuple, (winreg.HKEY_CURRENT_CONFIG, 'New Key #1\\New Key #2', 'verif', '123'))
+        key_tuple = app.get_key_value_data('4\\New Key #1\\New Key #2\\\\value\\\\New Value #1\\\\data\\\\3')
+        self.assertEqual(key_tuple, (winreg.HKEY_CURRENT_CONFIG, 'New Key #1\\New Key #2', 'New Value #1', '3'))
 
     def test_create_key(self):
         initial_count = string_key_count('4\\New Key #1\\New Key #2')
@@ -37,13 +48,21 @@ class Test(unittest.TestCase):
 
     def test_create_value(self):
         initial_count = string_key_count('4\\New Key #1\\New Key #2', check=1)
-        app.create_value('4\\New Key #1\\New Key #2\\New Key #1\\\\value\\\\0')
+        app.create_value('4\\New Key #1\\New Key #2\\New Key #1\\\\value\\\\3')
         final_count = string_key_count('4\\New Key #1\\New Key #2\\New Key #1', check=1)
         self.assertGreater(final_count, initial_count)
 
+    def test_edit_value(self):
+        app.edit_value('4\\New Key #1\\New Key #2\\New Key #1\\\\value\\\\New Value #1\\\\data\\\\1')
+        value = get_value_from_key('4\\New Key #1\\New Key #2\\New Key #1\\\\value\\\\New Value #1')
+        self.assertEqual('1', value)
+        app.edit_value('4\\New Key #1\\New Key #2\\New Key #1\\\\value\\\\New Value #1\\\\data\\\\0')
+        value = get_value_from_key('4\\New Key #1\\New Key #2\\New Key #1\\\\value\\\\New Value #1')
+        self.assertEqual('0', value)
+
     def test_delete_value(self):
         initial_count = string_key_count('4\\New Key #1\\New Key #2', check=1)
-        app.delete_value('4\\New Key #1\\New Key #2\\New Key #1\\\\value\\\\New Value #1')
+        app.delete_value('4\\New Key #1\\New Key #2\\New Key #1\\\\value\\\\New Value #2')
         final_count = string_key_count('4\\New Key #1\\New Key #2\\New Key #1', check=1)
         self.assertGreater(final_count, initial_count)
 
