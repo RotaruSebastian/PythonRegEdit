@@ -5,6 +5,16 @@ import app
 
 
 def string_key_count(path, check=0):
+    """Auxiliary function, gets the path to a registry key and returns its number of sub-keys or values.
+
+    :param path: url containing path to a registry key, must be decoded using `app.get_key_subkey`
+    :type path: str
+    :param check: if 0, function returns the number of sub-keys, if 1 function returns the number of values
+    :type check: int
+    :return: number of sub-keys or values
+    :rtype: int
+    """
+
     base_key, sub_key = app.get_key_subkey(path)
     try:
         handle = winreg.OpenKey(base_key, sub_key)
@@ -16,6 +26,14 @@ def string_key_count(path, check=0):
 
 
 def get_value_from_key(path):
+    """Auxiliary function, gets the path to a registry key and the name of a value, returns the data inside that value.
+
+    :param path: url containing path to a key and the name of a value, must be decoded using `app.get_key_subkey_param1`
+    :type path: str
+    :return: data from the given value
+    :rtype: str
+    """
+
     base_key, sub_key, value = app.get_key_subkey_param1(path)
     try:
         handle = winreg.OpenKey(base_key, sub_key, access=winreg.KEY_QUERY_VALUE)
@@ -27,6 +45,8 @@ def get_value_from_key(path):
 
 
 class Test(unittest.TestCase):
+    """Unit testing class for most of the functions from the app module"""
+
     def test_get_key(self):
         key_tuple = app.get_key_subkey('4\\')
         self.assertEqual(key_tuple, (winreg.HKEY_CURRENT_CONFIG, ''))

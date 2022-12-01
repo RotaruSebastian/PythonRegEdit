@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>app module &mdash; PythonRegEdit  documentation</title>
+      <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="_static/doctools.js"></script>
+        <script src="_static/sphinx_highlight.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="test module" href="test.html" />
+    <link rel="prev" title="Python_Regedit" href="modules.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="index.html" class="icon icon-home"> PythonRegEdit
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="modules.html">Python_Regedit</a><ul class="current">
+<li class="toctree-l2 current"><a class="current reference internal" href="#">app module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#app.win32_handle"><code class="docutils literal notranslate"><span class="pre">win32_handle()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#app.get_key_subkey"><code class="docutils literal notranslate"><span class="pre">get_key_subkey()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#app.get_key_subkey_param1"><code class="docutils literal notranslate"><span class="pre">get_key_subkey_param1()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#app.get_key_subkey_param1_param2"><code class="docutils literal notranslate"><span class="pre">get_key_subkey_param1_param2()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#app.value_number"><code class="docutils literal notranslate"><span class="pre">value_number()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#app.key_number"><code class="docutils literal notranslate"><span class="pre">key_number()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#app.create_key"><code class="docutils literal notranslate"><span class="pre">create_key()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#app.create_value"><code class="docutils literal notranslate"><span class="pre">create_value()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#app.edit_value"><code class="docutils literal notranslate"><span class="pre">edit_value()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#app.rename_value"><code class="docutils literal notranslate"><span class="pre">rename_value()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#app.rename_key"><code class="docutils literal notranslate"><span class="pre">rename_key()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#app.delete_key"><code class="docutils literal notranslate"><span class="pre">delete_key()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#app.delete_value"><code class="docutils literal notranslate"><span class="pre">delete_value()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#app.find_string"><code class="docutils literal notranslate"><span class="pre">find_string()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#app.recursive_search"><code class="docutils literal notranslate"><span class="pre">recursive_search()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#app.inspect_key"><code class="docutils literal notranslate"><span class="pre">inspect_key()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#app.expand_key"><code class="docutils literal notranslate"><span class="pre">expand_key()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#app.root"><code class="docutils literal notranslate"><span class="pre">root()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="test.html">test module</a></li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">PythonRegEdit</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home"></a></li>
+          <li class="breadcrumb-item"><a href="modules.html">Python_Regedit</a></li>
+      <li class="breadcrumb-item active">app module</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/app.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-app">
+<span id="app-module"></span><h1>app module<a class="headerlink" href="#module-app" title="Permalink to this heading"></a></h1>
+<dl class="py function">
+<dt class="sig sig-object py" id="app.win32_handle">
+<span class="sig-prename descclassname"><span class="pre">app.</span></span><span class="sig-name descname"><span class="pre">win32_handle</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">constant</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app.html#win32_handle"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#app.win32_handle" title="Permalink to this definition"></a></dt>
+<dd><p>Returns a win32con constant corresponding to the same registry key as a given winreg constant.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>constant</strong> (<em>int</em>) – winreg constant associated to one of the 5 root registry keys</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>win32con constant associated to the same root registry key as the function parameter</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="app.get_key_subkey">
+<span class="sig-prename descclassname"><span class="pre">app.</span></span><span class="sig-name descname"><span class="pre">get_key_subkey</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">param</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app.html#get_key_subkey"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#app.get_key_subkey" title="Permalink to this definition"></a></dt>
+<dd><p>Gets an url string containing a path to a registry key and returns values required to open it.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>param</strong> (<em>str</em>) – url string containing a number from 0 to 4 associated to a root key and the path to a registry key</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>tuple of winreg int constant for a root key and the path string</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>(int, str)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="app.get_key_subkey_param1">
+<span class="sig-prename descclassname"><span class="pre">app.</span></span><span class="sig-name descname"><span class="pre">get_key_subkey_param1</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">param</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app.html#get_key_subkey_param1"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#app.get_key_subkey_param1" title="Permalink to this definition"></a></dt>
+<dd><p>Same <cite>get_key_subkey</cite>, but also contains a third parameter, delimited by ‘param1'.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>param</strong> (<em>str</em>) – url string containing a number from 0 to 4, the path to a registry key and a string</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>tuple of winreg int constant for a root key, the path string and a second string</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>(int, str, str)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="app.get_key_subkey_param1_param2">
+<span class="sig-prename descclassname"><span class="pre">app.</span></span><span class="sig-name descname"><span class="pre">get_key_subkey_param1_param2</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">param</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app.html#get_key_subkey_param1_param2"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#app.get_key_subkey_param1_param2" title="Permalink to this definition"></a></dt>
+<dd><p>Same as <cite>get_key_subkey_param1</cite>, but with an extra string parameter, delimited by ‘param2'</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>param</strong> (<em>str</em>) – url string containing a number from 0 to 4, the path to a registry key and 2 strings</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>tuple of winreg int constant for a root key, the path string and a second string</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>(int, str, str, str)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="app.value_number">
+<span class="sig-prename descclassname"><span class="pre">app.</span></span><span class="sig-name descname"><span class="pre">value_number</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">base_key</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sub_key</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app.html#value_number"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#app.value_number" title="Permalink to this definition"></a></dt>
+<dd><p>Gets a registry key handle and name, and the name of a value inside that key, returns the value’s index.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>base_key</strong> (<em>handle</em>) – handle for a registry key</p></li>
+<li><p><strong>sub_key</strong> (<em>str</em>) – name of a sub-key of handle</p></li>
+<li><p><strong>value</strong> (<em>str</em>) – name of a value from the key described by handle and sub_key</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>index of value inside the key, 0 if the key could not be opened or value is not inside the key</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="app.key_number">
+<span class="sig-prename descclassname"><span class="pre">app.</span></span><span class="sig-name descname"><span class="pre">key_number</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">base_key</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sub_key</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app.html#key_number"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#app.key_number" title="Permalink to this definition"></a></dt>
+<dd><p>Gets a registry key handle and name, returns index of that key in its parent’s subkeys.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>base_key</strong> (<em>handle</em>) – handle for a registry key</p></li>
+<li><p><strong>sub_key</strong> (<em>str</em>) – name of a sub-key of handle</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>index of the key inside its parent, 0 if the key could not be opened</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="app.create_key">
+<span class="sig-prename descclassname"><span class="pre">app.</span></span><span class="sig-name descname"><span class="pre">create_key</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">param</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app.html#create_key"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#app.create_key" title="Permalink to this definition"></a></dt>
+<dd><p>Creates new registry key.</p>
+<p>Receives the path to a registry key and creates a new sub-key inside it, named ‘New Key #n’, where n is the smallest
+available number.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>param</strong> (<em>str</em>) – url string containing path to an existing registry key</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>json string confirming the function was successful, or an error message</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="app.create_value">
+<span class="sig-prename descclassname"><span class="pre">app.</span></span><span class="sig-name descname"><span class="pre">create_value</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">param</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app.html#create_value"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#app.create_value" title="Permalink to this definition"></a></dt>
+<dd><p>Creates value inside registry key.</p>
+<p>Receives the path to a registry key and a number associated to a value type and creates a new value inside the key,
+named ‘New Value #n’ of the desired type, where n is the smallest available number.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>param</strong> (<em>str</em>) – url string containing path to an existing registry key and a value type</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>json string confirming the function was successful, or an error message</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="app.edit_value">
+<span class="sig-prename descclassname"><span class="pre">app.</span></span><span class="sig-name descname"><span class="pre">edit_value</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">param</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app.html#edit_value"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#app.edit_value" title="Permalink to this definition"></a></dt>
+<dd><p>Changes the data inside a value from a registry key.</p>
+<p>Receives the path to a registry key, a value name and value data, opens the key and changes the given value’s data.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>param</strong> (<em>str</em>) – url string containing path to a key, name of a value and new data for that value</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>json string confirming the function was successful, or an error message</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="app.rename_value">
+<span class="sig-prename descclassname"><span class="pre">app.</span></span><span class="sig-name descname"><span class="pre">rename_value</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">param</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app.html#rename_value"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#app.rename_value" title="Permalink to this definition"></a></dt>
+<dd><p>Renames value in registry key by copying it with a new name and deleting the old one.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>param</strong> (<em>str</em>) – url string containing path to an existing key, name of an existing value and name for a new value</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>json string confirming the function was successful, or an error message</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="app.rename_key">
+<span class="sig-prename descclassname"><span class="pre">app.</span></span><span class="sig-name descname"><span class="pre">rename_key</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">param</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app.html#rename_key"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#app.rename_key" title="Permalink to this definition"></a></dt>
+<dd><p>Renames registry key by copying it with a new name and deleting the old one.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>param</strong> (<em>str</em>) – url string containing path to an existing key and name for a new key</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>json string confirming the function was successful, or an error message</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="app.delete_key">
+<span class="sig-prename descclassname"><span class="pre">app.</span></span><span class="sig-name descname"><span class="pre">delete_key</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">param</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app.html#delete_key"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#app.delete_key" title="Permalink to this definition"></a></dt>
+<dd><p>Deletes registry keys, with all its sub-keys.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>param</strong> (<em>str</em>) – url string containing path to an existing key</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>json string confirming the function was successful, or an error message</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="app.delete_value">
+<span class="sig-prename descclassname"><span class="pre">app.</span></span><span class="sig-name descname"><span class="pre">delete_value</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">param</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app.html#delete_value"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#app.delete_value" title="Permalink to this definition"></a></dt>
+<dd><p>Deletes value from registry key.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>param</strong> (<em>str</em>) – url string containing path to an existing key and name of a value</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>json string confirming the function was successful, or an error message</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="app.find_string">
+<span class="sig-prename descclassname"><span class="pre">app.</span></span><span class="sig-name descname"><span class="pre">find_string</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">param</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app.html#find_string"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#app.find_string" title="Permalink to this definition"></a></dt>
+<dd><p>Recursively searches for string in registry.</p>
+<p>Receives the path to a registry key, a value name and a string to be searched.
+The key and value are the starting point.</p>
+<ol class="arabic simple">
+<li><p>Finds the value’s index inside the key.</p></li>
+<li><p>Calls <cite>recursive_search</cite>, ignoring the first value_index values.</p></li>
+<li><p>If the search was not successful, finds index of searched key inside parent key.</p></li>
+<li><p>Recursively searches parent key, ignoring the first key_index sub-keys.</p></li>
+<li><p>If the search keeps failing until it reaches the root of one of the main keys, it moves on to the next root key.</p></li>
+<li><p>Repeats the process until it finds a match or reaches the end of the registry.</p></li>
+</ol>
+<p>Returns either the path to a key and value or an empty string.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>param</strong> (<em>str</em>) – url string containing path to the search starting point (registry key and value)</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>json string containing path to first occurrence, or an empty string if there are no matches</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="app.recursive_search">
+<span class="sig-prename descclassname"><span class="pre">app.</span></span><span class="sig-name descname"><span class="pre">recursive_search</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">base_key</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sub_key</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">search_string</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start_key</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start_value</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app.html#recursive_search"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#app.recursive_search" title="Permalink to this definition"></a></dt>
+<dd><p>Recursively searches for string in registry key.</p>
+<p>Searches for search_string in values starting from start_value, and then in sub-keys starting from start_key.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>base_key</strong> (<em>handle</em>) – handle for a registry key</p></li>
+<li><p><strong>sub_key</strong> (<em>str</em>) – name of sub-key of handle</p></li>
+<li><p><strong>search_string</strong> (<em>str</em>) – string that must be found</p></li>
+<li><p><strong>start_key</strong> (<em>int</em>) – index of first key that will be searched, by default 0</p></li>
+<li><p><strong>start_value</strong> (<em>int</em>) – index of first value that will be searched, by default 0</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>path to key and value if search_string is found, or an empty string otherwise</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="app.inspect_key">
+<span class="sig-prename descclassname"><span class="pre">app.</span></span><span class="sig-name descname"><span class="pre">inspect_key</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">param</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app.html#inspect_key"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#app.inspect_key" title="Permalink to this definition"></a></dt>
+<dd><p>Returns a list of names, types and data for each value in a registry key.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>param</strong> (<em>str</em>) – url string containing path to an existing registry key</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>json list of lists containing value-name, value-type, value-data</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="app.expand_key">
+<span class="sig-prename descclassname"><span class="pre">app.</span></span><span class="sig-name descname"><span class="pre">expand_key</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">param</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app.html#expand_key"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#app.expand_key" title="Permalink to this definition"></a></dt>
+<dd><p>Returns a list of sub-keys in a registry key.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>param</strong> (<em>str</em>) – url string containing path to an existing registry key</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>json list of strings</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="app.root">
+<span class="sig-prename descclassname"><span class="pre">app.</span></span><span class="sig-name descname"><span class="pre">root</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/app.html#root"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#app.root" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="modules.html" class="btn btn-neutral float-left" title="Python_Regedit" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="test.html" class="btn btn-neutral float-right" title="test module" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, Rotaru Sebastian-Gabriel 3B4.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

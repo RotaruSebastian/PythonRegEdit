@@ -356,12 +356,15 @@ def find_string(param):
 
     Receives the path to a registry key, a value name and a string to be searched.
     The key and value are the starting point.
+
     #. Finds the value's index inside the key.
-    #. Calls `recursive_search` starting from index + 1.
+    #. Calls `recursive_search`, ignoring the first value_index values.
     #. If the search was not successful, finds index of searched key inside parent key.
-    #. Recursively searches parent key starting from the sub-key with the smallest index greater than the previous one.
+    #. Recursively searches parent key, ignoring the first key_index sub-keys.
+    #. If the search keeps failing until it reaches the root of one of the main keys, it moves on to the next root key.
     #. Repeats the process until it finds a match or reaches the end of the registry.
-    Returns either the path to a key/value or an empty string.
+
+    Returns either the path to a key and value or an empty string.
 
     :param param: url string containing path to the search starting point (registry key and value)
     :type param: str
@@ -408,9 +411,9 @@ def recursive_search(base_key, sub_key, search_string, start_key=0, start_value=
     :type sub_key: str
     :param search_string: string that must be found
     :type search_string: str
-    :param start_key: index of first key that will be searched
+    :param start_key: index of first key that will be searched, by default 0
     :type start_key: int
-    :param start_value: index of first value that will be searched
+    :param start_value: index of first value that will be searched, by default 0
     :type start_value: int
     :return: path to key and value if search_string is found, or an empty string otherwise
     :rtype: str
