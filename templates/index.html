@@ -50,16 +50,17 @@
     </div>
     <div class="handler"></div>
     <div id="main" class="compartment">
-        <h4 id="key_name" data-name=""></h4>
+        <h4 id="key_data" data-name=""></h4>
             <button onclick="new_key()" class="key_dependent" disabled>New Key</button>
             <button onclick="new_value()" class="key_dependent" disabled>New Value</button>
             <button onclick="rename_key()" class="key_dependent" disabled>Rename Key</button>
             <button onclick="delete_key()" class="key_dependent" disabled>Delete Key</button>
-{#            <button onclick="find_string()" class="key_dependent" disabled>Find String</button>#}
-        <button onclick="find_string()" class="in_progress" disabled>Find String</button>
             <button onclick="rename_value()" class="value_dependent" disabled>Rename Value</button>
             <button onclick="edit_value()" class="value_dependent" disabled>Edit Value</button>
             <button onclick="delete_value()" class="value_dependent" disabled>Delete Value</button>
+                <br>
+            <button onclick="find_string()" class="key_dependent" disabled>Find String</button>
+            <button onclick="find_next_string()" class="key_dependent" disabled>Find Next</button>
         <table>
             <thead>
                 <tr>
