@@ -182,12 +182,12 @@ def create_key(param):
         current_keys = []
         sub_key_count = winreg.QueryInfoKey(handle)[0]
         for i in range(sub_key_count):
-            current_keys.append(winreg.EnumKey(handle, i))
+            current_keys.append(winreg.EnumKey(handle, i).lower())
         i = 1
-        new_key_name = f'New Key #{str(i)}'
+        new_key_name = f'New Key #{str(i)}'.lower()
         while new_key_name in current_keys:
             i += 1
-            new_key_name = f'New Key #{str(i)}'
+            new_key_name = f'New Key #{str(i)}'.lower()
         new_key = winreg.CreateKey(handle, new_key_name)
         new_key.Close()
         handle.Close()
@@ -303,6 +303,13 @@ def rename_key(param):
     base_name = sub_key[0:sub_key.rfind('\\') + 1]
     try:
         handle = RegCreateKey(base_key, base_name + name)
+        current_keys = []
+        sub_key_count = winreg.QueryInfoKey(handle)[0]
+        for i in range(sub_key_count):
+            current_keys.append(winreg.EnumKey(handle, i).lower())
+        if name.lower() in current_keys:
+            handle.Close()
+            return dumps('[RENAME_KEY]: Invalid key name')
         RegCopyTree(base_key, sub_key, handle)
         RegCloseKey(handle)
         RegDeleteTree(base_key, sub_key)

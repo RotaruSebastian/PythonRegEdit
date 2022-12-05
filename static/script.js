@@ -160,7 +160,10 @@ function rename_key() {
     let check_name = base_name + '\\' + new_name;
     if(valid_key_name(check_name)) {
         check_name = id + '\\\\param1\\\\' + new_name;
-        $.getJSON('/rename_key/' + encodeURIComponent(check_name), function () {
+        $.getJSON('/rename_key/' + encodeURIComponent(check_name), function (result) {
+            if(result === '[RENAME_KEY]: Invalid key name') {
+                window.alert('Key name not valid')
+            }
             base_name = base_name + '\\';
             update_branch(base_name, false);
             select_key(base_name + new_name);
@@ -301,7 +304,7 @@ function valid_key_name(name) {
     let children = document.getElementById(parent_name + '\\sub').querySelectorAll('.child');
     name += '\\';
     for(let child in children) {
-        if(children[child].id === name) {
+        if(children[child].id.toLowerCase() === name.toLowerCase()) {
             return false;
         }
     }

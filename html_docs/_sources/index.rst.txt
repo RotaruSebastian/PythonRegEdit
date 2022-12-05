@@ -6,6 +6,15 @@
 Welcome to PythonRegEdit's documentation!
 =========================================
 
+Short introduction
+-------------------
+
+The Windows registry is a database that stores information, settings and options for the operating system, programs and hardware installed in a hierarchical structure.
+
+Registry data is stored in values inside keys. Keys are similar to folders - can hold values and other keys - and values are data entries - strings, binary values, numbers (DWORD, QWORD), etc.
+
+This project is a local webapp (similar to the Windows Registry Editor utility) that allows users to graphically explore the Windows registry and modify it (browse through keys in a tree view, see value content in a table, create/delete/rename keys/values, edit the contents of values and find strings through key/value names and value data).
+
 .. toctree::
    :maxdepth: 2
    :caption: Contents:
