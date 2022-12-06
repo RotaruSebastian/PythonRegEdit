@@ -133,9 +133,9 @@ function new_key() {
 function new_value() {
     let type = prompt('Enter value type (0 -> REG_SZ, 1 -> REG_MULTI_SZ, 2 -> REG_EXPAND, 3 -> REG_DWORD');
     let id = document.getElementById('key_data').dataset.name;
-    let param = id + '\\\\param1\\\\' + type;
+    let param = encodeURIComponent(id) + '/' + encodeURIComponent(type);
     if(0 <= type && type <= 3) {
-        $.getJSON('/create_value/' + encodeURIComponent(param), function () {
+        $.getJSON('/create_value/' + param, function () {
             select_key(id);
         });
     } else {
@@ -159,8 +159,8 @@ function rename_key() {
     }
     let check_name = base_name + '\\' + new_name;
     if(valid_key_name(check_name)) {
-        check_name = id + '\\\\param1\\\\' + new_name;
-        $.getJSON('/rename_key/' + encodeURIComponent(check_name), function (result) {
+        check_name = encodeURIComponent(id) + '/' + encodeURIComponent(new_name);
+        $.getJSON('/rename_key/' + check_name, function (result) {
             if(result === '[RENAME_KEY]: Invalid key name') {
                 window.alert('Key name not valid')
             }
@@ -196,8 +196,8 @@ function rename_value() {
         return;
     }
     if(valid_value_name(new_name)) {
-        let param = id + '\\\\param1\\\\' + key_data.dataset.value + '\\\\param2\\\\' + new_name;
-        $.getJSON('/rename_value/' + encodeURIComponent(param), function () {
+        let param = encodeURIComponent(id) + '/' + encodeURIComponent(key_data.dataset.value) + '/' + encodeURIComponent(new_name);
+        $.getJSON('/rename_value/' + param, function () {
             select_key(id);
         });
     } else {
@@ -216,8 +216,8 @@ function edit_value() {
         new_value = prompt('Enter new value');
     }
     if(valid_value_content(key_data.dataset.type, new_value)) {
-        let param = id + '\\\\param1\\\\' + key_data.dataset.value + '\\\\param2\\\\' + new_value;
-        $.getJSON('/edit_value/' + encodeURIComponent(param), function () {
+        let param = encodeURIComponent(id) + '/' + encodeURIComponent(key_data.dataset.value) + '/' + encodeURIComponent(new_value);
+        $.getJSON('/edit_value/' + param, function () {
             // update_branch(id + '\\', false);
             select_key(id);
         });
@@ -229,8 +229,8 @@ function edit_value() {
 // Deletes selected value
 function delete_value() {
     let key_data = document.getElementById('key_data');
-    let string = key_data.dataset.name + '\\\\param1\\\\' + key_data.dataset.value;
-    $.getJSON('/delete_value/' + encodeURIComponent(string), function () {
+    let string = encodeURIComponent(key_data.dataset.name) + '/' + encodeURIComponent(key_data.dataset.value);
+    $.getJSON('/delete_value/' + string, function () {
         update_table();
     });
 }
@@ -250,8 +250,8 @@ function find_string() {
 function find_next_string() {
     let key_data = document.getElementById('key_data');
     let search_string = key_data.dataset.search;
-    search_string = key_data.dataset.name + '\\\\param1\\\\' + key_data.dataset.value + '\\\\param2\\\\' + search_string;
-    $.getJSON('/find_string/' + encodeURIComponent(search_string), function (result) {
+    search_string = encodeURIComponent(key_data.dataset.name) + '/' + encodeURIComponent(key_data.dataset.value) + '/' + encodeURIComponent(search_string);
+    $.getJSON('/find_string/' + search_string, function (result) {
         if(result.length) {
             search_result(result);
         } else {
@@ -273,9 +273,7 @@ function search_result(search_value) {
 function expand_all(expand_path, path_array, key, value) {
     if(path_array.length) {
         expand_path += '\\';
-        console.log(expand_path);
         let checkbox = document.getElementById(expand_path);
-        console.log(checkbox);
         if(checkbox.checked === true) {
             remove_branch(expand_path);
         }
@@ -304,8 +302,10 @@ function valid_key_name(name) {
     let children = document.getElementById(parent_name + '\\sub').querySelectorAll('.child');
     name += '\\';
     for(let child in children) {
-        if(children[child].id.toLowerCase() === name.toLowerCase()) {
-            return false;
+        if(typeof children[child].id === 'string') {
+            if(children[child].id.toLowerCase() === name.toLowerCase()) {
+                return false;
+            }
         }
     }
     return true;

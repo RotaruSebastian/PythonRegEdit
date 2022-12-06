@@ -2,7 +2,7 @@ from flask import Flask, render_template
 from urllib.parse import unquote
 from json import dumps
 from win32con import HKEY_CLASSES_ROOT, HKEY_CURRENT_USER, HKEY_LOCAL_MACHINE, HKEY_USERS, HKEY_CURRENT_CONFIG
-from win32api import RegCreateKey, RegCloseKey, RegCopyTree, RegDeleteTree
+from win32api import RegCreateKey, RegCloseKey, RegCopyTree, RegDeleteTree, RegQueryInfoKey, RegEnumKey
 from win32api import error as win32error
 import winreg
 
@@ -71,7 +71,7 @@ def get_key_subkey(param):
 
 
 def get_key_subkey_param1(param):
-    """Same `get_key_subkey`, but also contains a third parameter, delimited by '\\param1\\'.
+    """Same `get_key_subkey`, but also contains a third parameter, delimited by '/'.
 
     :param param: url string containing a number from 0 to 4, the path to a registry key and a string
     :type param: str
@@ -79,16 +79,16 @@ def get_key_subkey_param1(param):
     :rtype: (int, str, str)
     """
 
-    param = unquote(param)
-    pos = param.find('\\\\param1\\\\')
-    base_key = MAIN_KEYS[int(param[0])]
-    sub_key = str(param[2:pos])
-    value = str(param[pos + 10:])
+    param = param.split('/')
+    param = [unquote(par) for par in param]
+    base_key = MAIN_KEYS[int(param[0][0])]
+    sub_key = str(param[0][2:])
+    value = param[1]
     return base_key, sub_key, value
 
 
 def get_key_subkey_param1_param2(param):
-    """Same as `get_key_subkey_param1`, but with an extra string parameter, delimited by '\\param2\\'
+    """Same as `get_key_subkey_param1`, but with an extra string parameter, delimited by '/'
 
     :param param: url string containing a number from 0 to 4, the path to a registry key and 2 strings
     :type param: str
@@ -96,13 +96,9 @@ def get_key_subkey_param1_param2(param):
     :rtype: (int, str, str, str)
     """
 
-    param = unquote(param)
-    pos1 = param.find('\\\\param1\\\\')
-    pos2 = param.find('\\\\param2\\\\')
-    base_key = MAIN_KEYS[int(param[0])]
-    sub_key = str(param[2:pos1])
-    value = str(param[pos1 + 10: pos2])
-    data = str(param[pos2 + 10:])
+    param = param.split('/')
+    base_key, sub_key, value = get_key_subkey_param1(param[0] + '/' + param[1])
+    data = unquote(param[2])
     return base_key, sub_key, value, data
 
 
@@ -184,10 +180,10 @@ def create_key(param):
         for i in range(sub_key_count):
             current_keys.append(winreg.EnumKey(handle, i).lower())
         i = 1
-        new_key_name = f'New Key #{str(i)}'.lower()
-        while new_key_name in current_keys:
+        new_key_name = f'New Key #{str(i)}'
+        while new_key_name.lower() in current_keys:
             i += 1
-            new_key_name = f'New Key #{str(i)}'.lower()
+            new_key_name = f'New Key #{str(i)}'
         new_key = winreg.CreateKey(handle, new_key_name)
         new_key.Close()
         handle.Close()
@@ -304,9 +300,9 @@ def rename_key(param):
     try:
         handle = RegCreateKey(base_key, base_name + name)
         current_keys = []
-        sub_key_count = winreg.QueryInfoKey(handle)[0]
+        sub_key_count = RegQueryInfoKey(handle)[0]
         for i in range(sub_key_count):
-            current_keys.append(winreg.EnumKey(handle, i).lower())
+            current_keys.append(RegEnumKey(handle, i).lower())
         if name.lower() in current_keys:
             handle.Close()
             return dumps('[RENAME_KEY]: Invalid key name')
