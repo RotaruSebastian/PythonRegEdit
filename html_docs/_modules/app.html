@@ -70,7 +70,7 @@
 <span class="kn">from</span> <span class="nn">urllib.parse</span> <span class="kn">import</span> <span class="n">unquote</span>
 <span class="kn">from</span> <span class="nn">json</span> <span class="kn">import</span> <span class="n">dumps</span>
 <span class="kn">from</span> <span class="nn">win32con</span> <span class="kn">import</span> <span class="n">HKEY_CLASSES_ROOT</span><span class="p">,</span> <span class="n">HKEY_CURRENT_USER</span><span class="p">,</span> <span class="n">HKEY_LOCAL_MACHINE</span><span class="p">,</span> <span class="n">HKEY_USERS</span><span class="p">,</span> <span class="n">HKEY_CURRENT_CONFIG</span>
-<span class="kn">from</span> <span class="nn">win32api</span> <span class="kn">import</span> <span class="n">RegCreateKey</span><span class="p">,</span> <span class="n">RegCloseKey</span><span class="p">,</span> <span class="n">RegCopyTree</span><span class="p">,</span> <span class="n">RegDeleteTree</span>
+<span class="kn">from</span> <span class="nn">win32api</span> <span class="kn">import</span> <span class="n">RegCreateKey</span><span class="p">,</span> <span class="n">RegCloseKey</span><span class="p">,</span> <span class="n">RegCopyTree</span><span class="p">,</span> <span class="n">RegDeleteTree</span><span class="p">,</span> <span class="n">RegQueryInfoKey</span><span class="p">,</span> <span class="n">RegEnumKey</span>
 <span class="kn">from</span> <span class="nn">win32api</span> <span class="kn">import</span> <span class="n">error</span> <span class="k">as</span> <span class="n">win32error</span>
 <span class="kn">import</span> <span class="nn">winreg</span>
 
@@ -139,7 +139,7 @@
 
 
 <div class="viewcode-block" id="get_key_subkey_param1"><a class="viewcode-back" href="../app.html#app.get_key_subkey_param1">[docs]</a><span class="k">def</span> <span class="nf">get_key_subkey_param1</span><span class="p">(</span><span class="n">param</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Same `get_key_subkey`, but also contains a third parameter, delimited by &#39;\\param1\\&#39;.</span>
+    <span class="sd">&quot;&quot;&quot;Same `get_key_subkey`, but also contains a third parameter, delimited by &#39;/&#39;.</span>
 
 <span class="sd">    :param param: url string containing a number from 0 to 4, the path to a registry key and a string</span>
 <span class="sd">    :type param: str</span>
@@ -147,16 +147,16 @@
 <span class="sd">    :rtype: (int, str, str)</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="n">param</span> <span class="o">=</span> <span class="n">unquote</span><span class="p">(</span><span class="n">param</span><span class="p">)</span>
-    <span class="n">pos</span> <span class="o">=</span> <span class="n">param</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\\\\</span><span class="s1">param1</span><span class="se">\\\\</span><span class="s1">&#39;</span><span class="p">)</span>
-    <span class="n">base_key</span> <span class="o">=</span> <span class="n">MAIN_KEYS</span><span class="p">[</span><span class="nb">int</span><span class="p">(</span><span class="n">param</span><span class="p">[</span><span class="mi">0</span><span class="p">])]</span>
-    <span class="n">sub_key</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">param</span><span class="p">[</span><span class="mi">2</span><span class="p">:</span><span class="n">pos</span><span class="p">])</span>
-    <span class="n">value</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">param</span><span class="p">[</span><span class="n">pos</span> <span class="o">+</span> <span class="mi">10</span><span class="p">:])</span>
+    <span class="n">param</span> <span class="o">=</span> <span class="n">param</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;/&#39;</span><span class="p">)</span>
+    <span class="n">param</span> <span class="o">=</span> <span class="p">[</span><span class="n">unquote</span><span class="p">(</span><span class="n">par</span><span class="p">)</span> <span class="k">for</span> <span class="n">par</span> <span class="ow">in</span> <span class="n">param</span><span class="p">]</span>
+    <span class="n">base_key</span> <span class="o">=</span> <span class="n">MAIN_KEYS</span><span class="p">[</span><span class="nb">int</span><span class="p">(</span><span class="n">param</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">])]</span>
+    <span class="n">sub_key</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">param</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">2</span><span class="p">:])</span>
+    <span class="n">value</span> <span class="o">=</span> <span class="n">param</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
     <span class="k">return</span> <span class="n">base_key</span><span class="p">,</span> <span class="n">sub_key</span><span class="p">,</span> <span class="n">value</span></div>
 
 
 <div class="viewcode-block" id="get_key_subkey_param1_param2"><a class="viewcode-back" href="../app.html#app.get_key_subkey_param1_param2">[docs]</a><span class="k">def</span> <span class="nf">get_key_subkey_param1_param2</span><span class="p">(</span><span class="n">param</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Same as `get_key_subkey_param1`, but with an extra string parameter, delimited by &#39;\\param2\\&#39;</span>
+    <span class="sd">&quot;&quot;&quot;Same as `get_key_subkey_param1`, but with an extra string parameter, delimited by &#39;/&#39;</span>
 
 <span class="sd">    :param param: url string containing a number from 0 to 4, the path to a registry key and 2 strings</span>
 <span class="sd">    :type param: str</span>
@@ -164,13 +164,9 @@
 <span class="sd">    :rtype: (int, str, str, str)</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="n">param</span> <span class="o">=</span> <span class="n">unquote</span><span class="p">(</span><span class="n">param</span><span class="p">)</span>
-    <span class="n">pos1</span> <span class="o">=</span> <span class="n">param</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\\\\</span><span class="s1">param1</span><span class="se">\\\\</span><span class="s1">&#39;</span><span class="p">)</span>
-    <span class="n">pos2</span> <span class="o">=</span> <span class="n">param</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\\\\</span><span class="s1">param2</span><span class="se">\\\\</span><span class="s1">&#39;</span><span class="p">)</span>
-    <span class="n">base_key</span> <span class="o">=</span> <span class="n">MAIN_KEYS</span><span class="p">[</span><span class="nb">int</span><span class="p">(</span><span class="n">param</span><span class="p">[</span><span class="mi">0</span><span class="p">])]</span>
-    <span class="n">sub_key</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">param</span><span class="p">[</span><span class="mi">2</span><span class="p">:</span><span class="n">pos1</span><span class="p">])</span>
-    <span class="n">value</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">param</span><span class="p">[</span><span class="n">pos1</span> <span class="o">+</span> <span class="mi">10</span><span class="p">:</span> <span class="n">pos2</span><span class="p">])</span>
-    <span class="n">data</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">param</span><span class="p">[</span><span class="n">pos2</span> <span class="o">+</span> <span class="mi">10</span><span class="p">:])</span>
+    <span class="n">param</span> <span class="o">=</span> <span class="n">param</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;/&#39;</span><span class="p">)</span>
+    <span class="n">base_key</span><span class="p">,</span> <span class="n">sub_key</span><span class="p">,</span> <span class="n">value</span> <span class="o">=</span> <span class="n">get_key_subkey_param1</span><span class="p">(</span><span class="n">param</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="s1">&#39;/&#39;</span> <span class="o">+</span> <span class="n">param</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="n">unquote</span><span class="p">(</span><span class="n">param</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>
     <span class="k">return</span> <span class="n">base_key</span><span class="p">,</span> <span class="n">sub_key</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">data</span></div>
 
 
@@ -252,10 +248,10 @@
         <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">sub_key_count</span><span class="p">):</span>
             <span class="n">current_keys</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">winreg</span><span class="o">.</span><span class="n">EnumKey</span><span class="p">(</span><span class="n">handle</span><span class="p">,</span> <span class="n">i</span><span class="p">)</span><span class="o">.</span><span class="n">lower</span><span class="p">())</span>
         <span class="n">i</span> <span class="o">=</span> <span class="mi">1</span>
-        <span class="n">new_key_name</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;New Key #</span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="p">)</span><span class="si">}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
-        <span class="k">while</span> <span class="n">new_key_name</span> <span class="ow">in</span> <span class="n">current_keys</span><span class="p">:</span>
+        <span class="n">new_key_name</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;New Key #</span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="p">)</span><span class="si">}</span><span class="s1">&#39;</span>
+        <span class="k">while</span> <span class="n">new_key_name</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="ow">in</span> <span class="n">current_keys</span><span class="p">:</span>
             <span class="n">i</span> <span class="o">+=</span> <span class="mi">1</span>
-            <span class="n">new_key_name</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;New Key #</span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="p">)</span><span class="si">}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+            <span class="n">new_key_name</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;New Key #</span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="p">)</span><span class="si">}</span><span class="s1">&#39;</span>
         <span class="n">new_key</span> <span class="o">=</span> <span class="n">winreg</span><span class="o">.</span><span class="n">CreateKey</span><span class="p">(</span><span class="n">handle</span><span class="p">,</span> <span class="n">new_key_name</span><span class="p">)</span>
         <span class="n">new_key</span><span class="o">.</span><span class="n">Close</span><span class="p">()</span>
         <span class="n">handle</span><span class="o">.</span><span class="n">Close</span><span class="p">()</span>
@@ -372,9 +368,9 @@
     <span class="k">try</span><span class="p">:</span>
         <span class="n">handle</span> <span class="o">=</span> <span class="n">RegCreateKey</span><span class="p">(</span><span class="n">base_key</span><span class="p">,</span> <span class="n">base_name</span> <span class="o">+</span> <span class="n">name</span><span class="p">)</span>
         <span class="n">current_keys</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="n">sub_key_count</span> <span class="o">=</span> <span class="n">winreg</span><span class="o">.</span><span class="n">QueryInfoKey</span><span class="p">(</span><span class="n">handle</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">sub_key_count</span> <span class="o">=</span> <span class="n">RegQueryInfoKey</span><span class="p">(</span><span class="n">handle</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
         <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">sub_key_count</span><span class="p">):</span>
-            <span class="n">current_keys</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">winreg</span><span class="o">.</span><span class="n">EnumKey</span><span class="p">(</span><span class="n">handle</span><span class="p">,</span> <span class="n">i</span><span class="p">)</span><span class="o">.</span><span class="n">lower</span><span class="p">())</span>
+            <span class="n">current_keys</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">RegEnumKey</span><span class="p">(</span><span class="n">handle</span><span class="p">,</span> <span class="n">i</span><span class="p">)</span><span class="o">.</span><span class="n">lower</span><span class="p">())</span>
         <span class="k">if</span> <span class="n">name</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="ow">in</span> <span class="n">current_keys</span><span class="p">:</span>
             <span class="n">handle</span><span class="o">.</span><span class="n">Close</span><span class="p">()</span>
             <span class="k">return</span> <span class="n">dumps</span><span class="p">(</span><span class="s1">&#39;[RENAME_KEY]: Invalid key name&#39;</span><span class="p">)</span>
